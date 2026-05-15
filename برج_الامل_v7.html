@@ -1,0 +1,891 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة برج الأمل</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{direction:rtl;font-family:'Segoe UI',Tahoma,Arial,sans-serif;font-size:14px;background:#f9f9f8;color:#1a1a1a;overflow-x:hidden}
+.w{padding:12px;position:relative;min-height:400px;max-width:1200px;margin:0 auto}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;flex-wrap:wrap;background:#fff;border:1px solid #e5e5e0;border-radius:10px;padding:10px 14px}
+.logo{font-size:16px;font-weight:600}
+.month-sel{padding:5px 8px;font-size:13px;border:1px solid #ccc;border-radius:7px;background:#fff;color:#1a1a1a;font-family:inherit}
+.btn{background:#fff;color:#1a1a1a;border:1px solid #ccc;border-radius:7px;padding:6px 13px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.btn:hover{background:#f3f3f0}
+.btn.g{border-color:#16a34a;color:#16a34a}
+.btn.b{border-color:#2563eb;color:#2563eb}
+.btn.sm{padding:3px 8px;font-size:12px}
+.sst{font-size:12px;color:#888}.sst.ok{color:#16a34a}.sst.err{color:#dc2626}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media (max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.stats{grid-template-columns:1fr}}
+.sc{background:#fff;border:1px solid #e5e5e0;border-radius:8px;padding:10px 12px;text-align:center}
+.sc-l{font-size:11px;color:#888;margin-bottom:5px}
+.sc-v{font-size:18px;font-weight:600;color:#1a1a1a}
+.sc-v.g{color:#16a34a}.sc-v.r{color:#dc2626}.sc-v.b{color:#2563eb}
+.tabs{display:flex;border-bottom:1px solid #e5e5e0;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:inherit;flex-shrink:0}
+.tab.on{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
+.sec{display:none}.sec.on{display:block}
+.table-w{width:100%;overflow-x:auto;background:#fff;border:1px solid #e5e5e0;border-radius:8px}
+.ftable{width:100%;border-collapse:collapse;min-width:400px}
+.ftable th{font-size:13px;font-weight:600;color:#888;padding:10px 6px;text-align:center;border-bottom:1px solid #e5e5e0;background:#fcfcfb}
+.ftable th.lbl{text-align:right;width:90px}
+.ftable td{padding:5px;vertical-align:middle;border-bottom:1px solid #f0f0f0}
+.ftable td.lbl{font-size:13px;font-weight:600;color:#666;padding:5px 10px;text-align:right;background:#fcfcfb}
+.ftable tr:hover td{background:#fafaf8}
+.uc{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:6px;background:#f3f3f0;border:1px solid transparent;cursor:pointer;min-height:42px;transition:border-color .1s}
+.uc:hover{border-color:#bbb}
+.uc.paid{border-color:#16a34a;background:#f0fdf4}
+.uc.paid-no{border-color:#d97706;background:#fffbeb}
+.uc.cl{cursor:default;opacity:.4;background:#e5e5e0}
+.uc.em{background:transparent;border:none;cursor:default}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.g{background:#16a34a}.dot.y{background:#d97706}.dot.r{background:#ef4444}.dot.x{background:#aaa}
+.uc-name{font-size:13px;font-weight:500;color:#1a1a1a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.uc-amt{font-size:14px;font-weight:700;white-space:nowrap;flex-shrink:0}
+/* POPUP */
+.popup-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:100;padding:12px;align-items:center;justify-content:center}
+.popup-bg.open{display:flex}
+.popup{background:#fff;border-radius:12px;border:1px solid #e5e5e0;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative}
+.popup-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.av{width:38px;height:38px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#1d4ed8;flex-shrink:0}
+.ibox{background:#f3f3f0;border-radius:8px;padding:10px;margin-bottom:12px}
+.ir{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid #e5e5e0}
+.ir:last-child{border-bottom:none}
+.ik{color:#888;font-size:12px}
+.ph{margin-top:10px;max-height:130px;overflow-y:auto}
+.pi{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:12px;color:#666}
+.pi:last-child{border-bottom:none}
+.toggle-box{border:1px solid #e5e5e0;border-radius:8px;margin-bottom:10px;overflow:hidden}
+.toggle-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid #e5e5e0;transition:background .1s}
+.toggle-opt:last-child{border-bottom:none}
+.toggle-opt.sel-yes{background:#f0fdf4}
+.toggle-opt.sel-no{background:#fffbeb}
+.toggle-opt input[type=radio]{accent-color:#16a34a;width:15px;height:15px;flex-shrink:0}
+.tl{font-size:13px;font-weight:500;color:#1a1a1a}
+.ts{font-size:11px;color:#888;margin-top:1px}
+input[type=text],input[type=number],input[type=date],select{padding:6px 9px;font-size:13px;border:1px solid #ccc;border-radius:7px;background:#fff;color:#1a1a1a;width:100%;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:#888}
+.ig{display:flex;flex-direction:column;gap:4px}
+.ig label{font-size:11px;color:#666}
+.txl{display:flex;flex-direction:column;gap:5px}
+.txi{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;background:#f3f3f0;font-size:13px;gap:8px}
+.pgn{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+.pgn-btn{padding:5px 11px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-family:inherit;color:#1a1a1a}
+.pgn-btn:hover{background:#f3f3f0}
+.pgn-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.pgn-btn:disabled{opacity:.4;cursor:default}
+.pgn-info{font-size:12px;color:#888}
+.ti{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#f3f3f0;margin-bottom:6px}
+.card{background:#fff;border:1px solid #e5e5e0;border-radius:10px;padding:13px;margin-bottom:12px}
+.card-t{font-size:13px;font-weight:500;margin-bottom:10px;color:#1a1a1a}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media (max-width:600px){
+  .grid-2, .grid-3{grid-template-columns:1fr}
+}
+</style>
+
+<div class="w" id="root">
+<h2 style="position:absolute;left:-9999px">نظام إدارة برج الأمل</h2>
+
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span class="logo">🏢 برج الأمل</span>
+    <input type="month" id="mpick" class="month-sel">
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <div id="conn-status" style="font-size:10px;padding:2px 6px;border-radius:4px;background:#eee;color:#888;margin-left:5px">جاري الاتصال...</div>
+    <button class="btn g" onclick="doSave()">💾 حفظ</button>
+    <button class="btn b" onclick="doDrive()">⬇ Drive</button>
+    <span class="sst ok" id="sst">✓ محفوظ</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="sc"><div class="sc-l">الرصيد الحالي</div><div class="sc-v b" id="s-bal">0 ج</div></div>
+  <div class="sc"><div class="sc-l">إجمالي الإيرادات</div><div class="sc-v g" id="s-inc">0 ج</div></div>
+  <div class="sc"><div class="sc-l">إجمالي المصروفات</div><div class="sc-v r" id="s-exp">0 ج</div></div>
+  <div class="sc"><div class="sc-l">دفعوا هذا الشهر</div><div class="sc-v" id="s-paid">0/0</div></div>
+</div>
+
+<div class="tabs" id="tabs-bar">
+  <div class="tab on" onclick="sw('floors',this)">🏠 الأدوار</div>
+  <div class="tab" onclick="sw('tenants',this)">👥 السكان</div>
+  <div class="tab" onclick="sw('txs',this)">🧾 العمليات</div>
+  <div class="tab" onclick="sw('settings',this)">⚙ الإعدادات</div>
+</div>
+
+<div class="sec on" id="sec-floors">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px;flex-wrap:wrap;gap:8px">
+    <h3 id="current-sec-title" style="font-size:14px;font-weight:600;color:#1a1a1a">🏠 الأدوار</h3>
+    <button class="btn sm" onclick="sw('settings', document.querySelector('.tab[onclick*=\'settings\']'))">⚙ إدارة / إضافة أقسام</button>
+  </div>
+  <div class="table-w">
+    <table class="ftable">
+      <thead><tr>
+        <th class="lbl">الطابق</th>
+        <th>يمين المصعد</th>
+        <th>منتصف الدور</th>
+        <th>يسار المصعد</th>
+      </tr></thead>
+      <tbody id="ftbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="sec" id="sec-tenants"><div id="tenants-list"></div></div>
+
+<div class="sec" id="sec-txs">
+  <div class="card">
+    <div class="card-t">+ إضافة عملية يدوية</div>
+    <div class="grid-3" style="margin-bottom:8px">
+      <div class="ig"><label>التاريخ</label><input type="date" id="tx-d"></div>
+      <div class="ig"><label>النوع</label><select id="tx-t"><option value="income">إيراد</option><option value="expense">مصروف</option></select></div>
+      <div class="ig"><label>المبلغ (ج)</label><input type="number" id="tx-a" placeholder="0" min="0"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="ig" style="flex:1;min-width:200px"><label>البيان</label><input type="text" id="tx-n" placeholder="وصف العملية..."></div>
+      <button class="btn" style="align-self:flex-end;flex-shrink:0" onclick="addTx()">إضافة</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
+    <select id="tx-filter" onchange="renderTxs()" style="width:auto;font-size:12px;padding:4px 8px;font-family:inherit"><option value="all">الكل</option><option value="income">إيرادات</option><option value="expense">مصروفات</option></select>
+    <input type="text" id="tx-search" placeholder="بحث..." style="flex:1;font-size:12px;padding:4px 8px;min-width:120px" oninput="txPage=1;renderTxs()">
+    <span style="font-size:12px;color:#888" id="tx-count"></span>
+  </div>
+  <div class="txl" id="txlist"></div>
+  <div class="pgn" id="pgn"></div>
+</div>
+
+<div class="sec" id="sec-settings">
+  <div style="margin-bottom:12px;display:flex;justify-content:flex-end">
+    <button class="btn g" onclick="openAddTenant()">+ إضافة ساكن جديد</button>
+  </div>
+  <div class="card">
+    <div class="card-t">إدارة الأقسام</div>
+    <div id="sections-list"></div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <input type="text" id="new-sec-name" placeholder="اسم القسم الجديد (مثلاً: مبنى ب)" style="flex:1;min-width:150px">
+      <button class="btn g" onclick="addSection()">+ إضافة نسخة من "الأدوار"</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-t">قائمة السكان</div>
+    <div id="edit-list"></div>
+    <div class="pgn" id="edit-pgn"></div>
+  </div>
+</div>
+
+<!-- EDIT TENANT POPUP -->
+<div class="popup-bg" id="edit-popup-bg" onclick="if(event.target===this)closeEditMdl()">
+  <div class="popup">
+    <div class="popup-hd">
+      <div style="font-size:16px;font-weight:600" id="at-title">+ إضافة / تعديل ساكن</div>
+      <button onclick="closeEditMdl()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:24px;line-height:1;padding:0 4px">×</button>
+    </div>
+    <div class="grid-2" style="margin-bottom:15px">
+      <div class="ig"><label>الاسم الكامل</label><input type="text" id="at-n" placeholder="الاسم"></div>
+      <div class="ig"><label>رقم التليفون</label><input type="text" id="at-p" placeholder="01X..."></div>
+      <div class="ig"><label>القسم / المبنى</label><select id="at-s"></select></div>
+      <div class="ig"><label>الطابق</label><select id="at-f"></select></div>
+      <div class="ig"><label>الموقع</label><select id="at-pos"><option value="2">يمين</option><option value="1">وسط</option><option value="0">يسار</option></select></div>
+      <div class="ig"><label>ملاحظات</label><input type="text" id="at-nt" placeholder="مستأجر / مالك..."></div>
+      <div class="ig" style="flex-direction:row;align-items:center;gap:8px;grid-column: span 2;padding-top:5px">
+        <input type="checkbox" id="at-cl" style="width:20px;height:20px;cursor:pointer">
+        <label for="at-cl" style="font-size:13px;color:#1a1a1a;cursor:pointer">مغلق / غير نشط (لا يظهر في إحصائيات الدفع)</label>
+      </div>
+    </div>
+    <button class="btn g" style="width:100%;justify-content:center;padding:10px;font-size:14px" onclick="saveTenant()">✓ حفظ بيانات الساكن</button>
+    <div style="font-size:11px;color:#aaa;margin-top:12px;text-align:center">🔒 التليفون لا يظهر في الأدوار</div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="popup-bg" id="popup-bg" onclick="bgClick(event)">
+  <div class="popup" id="popup">
+    <div class="popup-hd">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="av" id="m-av">؟</div>
+        <div>
+          <div style="font-size:14px;font-weight:600" id="m-nm">-</div>
+          <div style="font-size:11px;color:#888" id="m-loc">-</div>
+          <div id="m-ph" style="font-size:11px;color:#888;margin-top:2px"></div>
+        </div>
+      </div>
+      <button onclick="closeMdl()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:24px;line-height:1;padding:0 4px">×</button>
+    </div>
+    <div class="ibox">
+      <div class="ir"><span class="ik">الشهر</span><span style="font-weight:600" id="m-month">-</span></div>
+      <div class="ir"><span class="ik">إجمالي مدفوع هذا الشهر</span><span style="font-weight:600;color:#16a34a" id="m-ptot">0 ج</span></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
+      <div class="ig" style="flex:1"><label>المبلغ المدفوع (ج)</label><input type="number" id="m-amt" placeholder="0" min="0" oninput="updPreview()"></div>
+      <div class="ig" style="flex:1.4"><label>ملاحظة (اختياري)</label><input type="text" id="m-note" placeholder=""></div>
+    </div>
+    <div class="toggle-box">
+      <label class="toggle-opt sel-yes" id="opt-yes" onclick="selectOpt(true)">
+        <input type="radio" name="addInc" id="r-yes" checked>
+        <div><div class="tl">✅ أضف للإيرادات والرصيد</div><div class="ts">دفعة + عملية إيراد تلقائية</div></div>
+      </label>
+      <label class="toggle-opt" id="opt-no" onclick="selectOpt(false)">
+        <input type="radio" name="addInc" id="r-no">
+        <div><div class="tl">🔖 سجّل الدفع فقط</div><div class="ts">بدون تغيير الرصيد</div></div>
+      </label>
+    </div>
+    <div id="m-preview" style="font-size:12px;min-height:18px;margin-bottom:10px;text-align:center"></div>
+    <button class="btn g" style="width:100%;justify-content:center;padding:9px;font-size:14px" onclick="recPay()">✓ تسجيل الدفعة</button>
+    <div style="font-size:11px;color:#888;margin-top:14px;margin-bottom:5px;font-weight:500">مدفوعات هذا الشهر:</div>
+    <div class="ph" id="m-hist"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const FN=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر','الثالث عشر'];
+const PN=['يسار','وسط','يمين'];
+const COL=[2,1,0];
+const PER=20;
+const fmt=n=>Math.round(n).toLocaleString('ar-EG');
+const uk=(sid,f,p)=>(sid==='floors'?'':sid+'_')+f+'_'+p;
+const mk=m=>'pay_'+m.replace('-','_');
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+
+const SEED_T={
+  '1_0':{name:'أ. الحاج إسماعيل',phone:'',notes:'مغلق',closed:true},
+  '1_1':{name:'عم إسحاق',phone:'',notes:'مغلق',closed:true},
+  '1_2':{name:'أ. أم أيمن',phone:'',notes:''},
+  '2_0':{name:'عم إسحاق',phone:'',notes:'مغلق',closed:true},
+  '2_1':{name:'أ. أم مغربي',phone:'',notes:''},
+  '2_2':{name:'مستأجر / أبو هشام أ. حبيب',phone:'',notes:'مستأجر'},
+  '3_0':{name:'أ. مكرم',phone:'',notes:'شقة واحدة'},
+  '3_1':{name:'مستأجر مصطفى / أبو عمرو',phone:'',notes:'مستأجر'},
+  '4_0':{name:'مستأجر / سيد أ. جرجس',phone:'',notes:'مستأجر'},
+  '4_1':{name:'أ. أبانوب',phone:'',notes:''},
+  '4_2':{name:'مستأجر / مروان أ. خليفة',phone:'',notes:'مستأجر'},
+  '5_0':{name:'أ. مينا',phone:'',notes:'مغلق',closed:true},
+  '5_1':{name:'أ. مايكل',phone:'',notes:''},
+  '5_2':{name:'أ. هشام',phone:'',notes:''},
+  '6_0':{name:'مستأجر / أيمن أ. رمسيس',phone:'',notes:'مستأجر'},
+  '6_1':{name:'أ. بيتر',phone:'',notes:''},
+  '6_2':{name:'أ. إبراهيم عبدالعزيز',phone:'',notes:''},
+  '7_0':{name:'أ. أرسانيوس',phone:'',notes:''},
+  '7_1':{name:'أ. محمد أبوسدرة',phone:'',notes:''},
+  '7_2':{name:'أ. مصطفى طارق',phone:'',notes:''},
+  '8_0':{name:'سيف محمود',phone:'',notes:''},
+  '8_1':{name:'شريف',phone:'',notes:''},
+  '8_2':{name:'أ. مصطفى فوزي',phone:'',notes:''},
+  '9_0':{name:'أ. خليفة',phone:'',notes:''},
+  '9_1':{name:'أ. خالد',phone:'',notes:''},
+  '9_2':{name:'أ. خليفة',phone:'',notes:''},
+  '10_0':{name:'أ. مينا مجدي',phone:'',notes:''},
+  '10_1':{name:'أ. عبدالرحمن',phone:'',notes:'مغلق',closed:true},
+  '10_2':{name:'أ. أبومعاذ',phone:'',notes:''},
+  '11_0':{name:'أ. معاذ',phone:'',notes:''},
+  '11_1':{name:'أ. عبدالله',phone:'',notes:'مغلق',closed:true},
+  '11_2':{name:'أ. حسام',phone:'',notes:''},
+  '12_0':{name:'أ. أحمد السمان',phone:'',notes:'مغلق',closed:true},
+  '12_1':{name:'أ. محمد ناجي',phone:'',notes:''},
+  '12_2':{name:'أ. بلال أشرف',phone:'',notes:'مغلق',closed:true},
+};
+
+const SEED_TXS=[{"id":41,"date":"2025-09-25","type":"income","amount":1390,"note":"رصيد افتتاحي للعقار"},{"id":51,"date":"2025-10-24","type":"income","amount":2850,"note":"خدمات شهر 10"},{"id":62,"date":"2025-10-24","type":"expense","amount":2045,"note":"شحن كارت الكهرباء عن شهر 10"},{"id":72,"date":"2025-10-24","type":"expense","amount":200,"note":"تنظيف الخزانات"},{"id":82,"date":"2025-10-24","type":"expense","amount":50,"note":"شراء لمبات"},{"id":91,"date":"2025-10-24","type":"income","amount":25,"note":"بيع كارته اسانسير"},{"id":101,"date":"2025-10-25","type":"income","amount":250,"note":"متأخرات من الدور الخامس يسار"},{"id":112,"date":"2025-11-01","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 10"},{"id":122,"date":"2025-11-01","type":"expense","amount":250,"note":"صيانة DVR الكاميرات"},{"id":132,"date":"2025-11-01","type":"expense","amount":35,"note":"مكنسة للسلم"},{"id":141,"date":"2025-11-06","type":"income","amount":2050,"note":"خدمات شهر 11"},{"id":151,"date":"2025-11-08","type":"income","amount":25,"note":"بيع كارته اسانسير"},{"id":162,"date":"2025-11-08","type":"expense","amount":2040,"note":"شحن عداد الكهرباء عن شهر 11"},{"id":171,"date":"2025-11-08","type":"income","amount":100,"note":"خدمات شهر 11"},{"id":181,"date":"2025-11-15","type":"income","amount":305,"note":"خدمات شهر 11"},{"id":191,"date":"2025-11-15","type":"income","amount":125,"note":"بيع 5 كاراتات اسانسير"},{"id":202,"date":"2025-11-15","type":"expense","amount":80,"note":"صيانة ماتور المياه"},{"id":211,"date":"2025-11-16","type":"income","amount":125,"note":"خدمات نوفمبر"},{"id":221,"date":"2025-11-18","type":"income","amount":100,"note":"خدمات نوفمبر"},{"id":232,"date":"2025-11-23","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 11"},{"id":241,"date":"2025-11-22","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":252,"date":"2025-12-05","type":"expense","amount":2040,"note":"شحن عداد الكهرباء عن شهر 12"},{"id":261,"date":"2025-12-08","type":"income","amount":1500,"note":"خدمات شهر 12"},{"id":271,"date":"2025-12-08","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":281,"date":"2025-12-11","type":"income","amount":325,"note":"خدمات شهر 12"},{"id":291,"date":"2025-12-11","type":"income","amount":275,"note":"مقدم من استاذ ايمن الدور السابع"},{"id":301,"date":"2025-12-12","type":"income","amount":250,"note":"عم خليفة شهر 12 و 1"},{"id":311,"date":"2025-12-18","type":"income","amount":345,"note":"خدمات شهر 12 و 1"},{"id":321,"date":"2025-12-18","type":"income","amount":125,"note":"خدمات شهر 12 و 1"},{"id":331,"date":"2025-12-19","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":341,"date":"2025-12-19","type":"income","amount":100,"note":"خدمات شهر 12"},{"id":352,"date":"2025-12-20","type":"expense","amount":300,"note":"صيانة الاسانسير"},{"id":361,"date":"2025-12-22","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":371,"date":"2025-12-22","type":"income","amount":100,"note":"خدمات شهر 1"},{"id":382,"date":"2025-12-22","type":"expense","amount":200,"note":"نظافة الخزان"},{"id":391,"date":"2026-01-05","type":"income","amount":250,"note":"شهر 11 و 12 من هشام"},{"id":401,"date":"2026-01-05","type":"income","amount":100,"note":"شهر 12 ام كراس"},{"id":411,"date":"2026-01-05","type":"income","amount":625,"note":"خدمات شهر 12"},{"id":421,"date":"2026-01-08","type":"income","amount":1500,"note":"خدمات العمارة"},{"id":431,"date":"2026-01-11","type":"income","amount":450,"note":"خدمات العمارة"},{"id":441,"date":"2026-01-11","type":"income","amount":100,"note":"بيع 4 كارتات"},{"id":452,"date":"2026-01-11","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":462,"date":"2026-01-18","type":"expense","amount":600,"note":"كارتات 300 و صيانة اسانسير 300"},{"id":471,"date":"2026-01-18","type":"income","amount":375,"note":"خدمات شهر 1 و 2"},{"id":481,"date":"2026-01-22","type":"income","amount":125,"note":"خدمات شهر 1"},{"id":492,"date":"2026-01-26","type":"expense","amount":400,"note":"صيانة مروحة الاسانسير"},{"id":501,"date":"2026-01-26","type":"income","amount":125,"note":"خدمات شهر 2"},{"id":511,"date":"2026-01-26","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":521,"date":"2026-02-02","type":"income","amount":475,"note":"خدمات شهر 2"},{"id":531,"date":"2026-02-03","type":"income","amount":450,"note":"خدمات شهر 2"},{"id":541,"date":"2026-02-10","type":"income","amount":225,"note":"خدمات شهر 2"},{"id":551,"date":"2026-02-10","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":562,"date":"2026-02-10","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":572,"date":"2026-02-16","type":"expense","amount":300,"note":"صيانة اسانسير"},{"id":581,"date":"2026-02-16","type":"income","amount":1275,"note":"خدمات العقار"},{"id":592,"date":"2026-02-19","type":"expense","amount":220,"note":"تنظيف الخزانات"},{"id":602,"date":"2026-03-03","type":"expense","amount":300,"note":"صيانة اسانسير"},{"id":611,"date":"2026-03-03","type":"income","amount":725,"note":"خدمات شهر 3"},{"id":621,"date":"2026-03-04","type":"income","amount":575,"note":"خدمات شهر 3"},{"id":631,"date":"2026-03-04","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":641,"date":"2026-03-05","type":"income","amount":600,"note":"خدمات الشهر"},{"id":651,"date":"2026-03-10","type":"income","amount":525,"note":"خدمات الشهر"},{"id":661,"date":"2026-03-12","type":"income","amount":275,"note":"خدمات الشهر"},{"id":672,"date":"2026-03-12","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":682,"date":"2026-03-12","type":"expense","amount":650,"note":"100 قلب جديد و 350 مفتايح و 200 اوكرة جديدة"},{"id":691,"date":"2026-03-12","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":701,"date":"2026-03-15","type":"income","amount":75,"note":"بيع 3 كارتة اسانسير"},{"id":711,"date":"2026-03-15","type":"income","amount":900,"note":"خدمات العقار"},{"id":722,"date":"2026-03-15","type":"expense","amount":50,"note":"5 مفاتيح للعقار"},{"id":731,"date":"2026-03-29","type":"income","amount":275,"note":"خدمات شهر 4"},{"id":742,"date":"2026-03-29","type":"expense","amount":20,"note":"شراء لمبة"},{"id":751,"date":"2026-03-29","type":"income","amount":250,"note":"خدمات شهر 2 و 3 و 4"},{"id":761,"date":"2026-03-29","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":771,"date":"2026-03-29","type":"income","amount":285,"note":"125 شهر 2 و 150 شهر 3 و مفتاح"},{"id":781,"date":"2026-03-30","type":"income","amount":450,"note":"خدمات شهر 3 و 4 و 5"},{"id":791,"date":"2026-04-01","type":"income","amount":750,"note":"خدمات شهر 4"},{"id":802,"date":"2026-04-01","type":"expense","amount":50,"note":"5 مفاتيح لباب العمارة"},{"id":811,"date":"2026-04-05","type":"income","amount":725,"note":"خدمات شهر 4"},{"id":821,"date":"2026-04-08","type":"income","amount":275,"note":"خدمات شهر 4"},{"id":832,"date":"2026-04-08","type":"expense","amount":2060,"note":"شحن كهربا الاسانسير"},{"id":841,"date":"2026-04-15","type":"income","amount":450,"note":"خدمات شهر 3 و 4"},{"id":851,"date":"2026-04-15","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":861,"date":"2026-04-20","type":"income","amount":450,"note":"خدمات العقار"},{"id":872,"date":"2026-04-20","type":"expense","amount":200,"note":"تنظيف الخزانات"},{"id":881,"date":"2026-04-23","type":"income","amount":150,"note":"الخدمات"},{"id":892,"date":"2026-04-23","type":"expense","amount":50,"note":"قفل و جنزبر"},{"id":901,"date":"2026-04-26","type":"income","amount":200,"note":"خدمات"},{"id":911,"date":"2026-04-27","type":"income","amount":100,"note":"بيع 4 كارتات"},{"id":921,"date":"2026-04-27","type":"income","amount":2720,"note":"خدمات + صيانة الماتور"},{"id":932,"date":"2026-04-27","type":"expense","amount":3300,"note":"صيانة الماتور"},{"id":942,"date":"2026-04-27","type":"expense","amount":3090,"note":"شحن كهريا الاسانسير"},{"id":951,"date":"2026-04-29","type":"income","amount":400,"note":"صيانة ماتور الخزان"},{"id":961,"date":"2026-04-29","type":"income","amount":510,"note":"خدمات شهر 5"},{"id":971,"date":"2026-04-29","type":"income","amount":200,"note":"صيانة ماتور الخزان"},{"id":981,"date":"2026-05-02","type":"income","amount":400,"note":"صيانة الماتور"},{"id":991,"date":"2026-05-02","type":"income","amount":460,"note":"الخدمات"},{"id":1002,"date":"2026-05-07","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 4"},{"id":1012,"date":"2026-05-07","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 5"},{"id":1022,"date":"2026-05-07","type":"expense","amount":300,"note":"شراء كارتات اسانسير"},{"id":1031,"date":"2026-05-07","type":"income","amount":400,"note":"صيانة ماتور الخزان استاذ ابراهيم"},{"id":1041,"date":"2026-05-07","type":"income","amount":610,"note":"خدمات شهر 5"},{"id":1051,"date":"2026-05-07","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":1062,"date":"2026-05-07","type":"expense","amount":300,"note":"فرق سعر صندوق القمامة"}];
+
+// State — 3 keys منفصلة في storage
+let T={},P={},TX=[],CM='2026-05',M={}; 
+let SECTIONS=[
+  {id:'floors',title:'الأدوار',type:'floors',visible:true,icon:'🏠'},
+  {id:'txs',title:'العمليات',type:'txs',visible:true,icon:'🧾'},
+  {id:'settings',title:'الإعدادات',type:'settings',visible:true,icon:'⚙'}
+];
+let CSID='floors',lastFloorsSid='floors',openUnit=null,editKey=null,addToIncome=true,txPage=1,tenantPage=1;
+
+const appStorage = {
+  async get() {
+    return new Promise((resolve) => {
+      google.script.run.withSuccessHandler(data => resolve({ value: data, source: 'api' }))
+        .withFailureHandler(() => resolve({ value: null }))
+        .loadData();
+    });
+  },
+  async set(data) {
+    return new Promise((resolve, reject) => {
+      google.script.run.withSuccessHandler(() => resolve({ source: 'api' }))
+        .withFailureHandler(err => reject(err))
+        .saveData(data);
+    });
+  }
+};
+
+async function doSave(){
+  setSt('جاري الحفظ...','');
+  try{
+    const res = await appStorage.set({ tenants: T, payments: P, transactions: TX, currentMonth: CM, sections: SECTIONS, mapping: M });
+    setSt('✓ تم الحفظ','ok');
+    updateConnStatus(res.source);
+  }catch(e){setSt('خطأ في الحفظ','err');}
+}
+function autoSave(){setSt('...','');setTimeout(doSave,700);}
+function setSt(m,c){const e=document.getElementById('sst');if(e){e.textContent=m;e.className='sst '+c;}}
+
+function updateConnStatus(source) {
+  const el = document.getElementById('conn-status');
+  if (!el) return;
+  if (source === 'api') {
+    el.textContent = '● متصل بـ Google Sheets';
+    el.style.background = '#dcfce7';
+    el.style.color = '#15803d';
+  } else {
+    el.textContent = '○ تخزين محلي مؤقت';
+    el.style.background = '#fef9c3';
+    el.style.color = '#854d0e';
+  }
+}
+
+async function load(){
+  setSt('جاري التحميل...','');
+  try{
+    const res = await appStorage.get();
+    if (res && res.value) {
+      const d = res.value;
+      T = d.tenants || {};
+      P = d.payments || {};
+      TX = d.transactions || [];
+      CM = d.currentMonth || CM;
+      M = d.mapping || {};
+      if (d.sections) {
+        SECTIONS = d.sections.filter(s => s.id !== 'tenants');
+      }
+      
+      // Robust migration: normalize T to name-keyed + ensure M consistency
+      let migrated = false;
+      const cleanT = {};
+      const cleanM = { ...M };
+
+      // Pass 1: process any existing M entries to seed cleanT
+      Object.entries(cleanM).forEach(([loc, name]) => {
+        if (T[name]) cleanT[name] = T[name];
+        else if (T[loc]) { cleanT[name] = T[loc]; cleanT[name].name = name; }
+      });
+
+      // Pass 2: scan T for location-keyed entries (old format) and migrate them
+      Object.entries(T).forEach(([key, data]) => {
+        if (!data || !data.name) return;
+        const name = data.name.trim();
+        const parsed = parseUK(key);
+        const isLocKey = (parsed.f >= 0 && parsed.f < 13 && parsed.p >= 0 && parsed.p < 3 && parsed.sid);
+
+        if (isLocKey) {
+          // Old format: key is a location — map it and store by name
+          if (!cleanM[key] || cleanM[key] !== name) { cleanM[key] = name; migrated = true; }
+          if (!cleanT[name]) {
+            cleanT[name] = data;
+            migrated = true;
+          } else {
+            // Merge: prefer non-closed, prefer data with phone/notes
+            const e = cleanT[name];
+            if (data.phone && !e.phone) { e.phone = data.phone; migrated = true; }
+            if (data.notes && !e.notes) { e.notes = data.notes; migrated = true; }
+            if (!data.closed && e.closed) { e.closed = false; migrated = true; }
+          }
+        } else {
+          // New format: key is a tenant name
+          if (!cleanT[key]) cleanT[key] = data;
+        }
+      });
+
+      // Pass 3: for each cloned section (not 'floors'), auto-copy M from floors
+      const floorSections = SECTIONS.filter(s => s.type === 'floors' && s.id !== 'floors');
+      floorSections.forEach(sec => {
+        Object.entries(cleanM).forEach(([loc, tName]) => {
+          const {sid, f, p} = parseUK(loc);
+          if (sid === 'floors' && !cleanM[uk(sec.id, f, p)]) {
+            cleanM[uk(sec.id, f, p)] = tName;
+            migrated = true;
+          }
+        });
+      });
+
+      if (migrated) { T = cleanT; M = cleanM; }
+
+      updateConnStatus(res.source);
+      setSt('✓ تم التحميل','ok');
+    } else {
+      T = {}; // Fresh start or SEED if needed
+      TX = JSON.parse(JSON.stringify(SEED_TXS));
+      updateConnStatus('local');
+    }
+  }catch(e){
+    T={};
+    TX=JSON.parse(JSON.stringify(SEED_TXS));
+    updateConnStatus('local');
+  }
+  document.getElementById('mpick').value=CM;
+  document.getElementById('tx-d').value=todayStr();
+  document.getElementById('mpick').addEventListener('change',e=>{CM=e.target.value;refreshAll();});
+  populateFSel();renderTabs();refreshAll();
+  if(CSID==='settings'){renderEditList();renderSectionsList();}
+}
+
+// Utility to migrate data from local storage to Google Sheets
+async function migrateLocalToGoogle() {
+  if (!confirm('هل تريد نقل البيانات من هذا المتصفح إلى Google Sheets؟')) return;
+  const data = {
+    tenants: JSON.parse(localStorage.getItem('ba_tenants') || '{}'),
+    payments: JSON.parse(localStorage.getItem('ba_payments') || '{}'),
+    transactions: JSON.parse(localStorage.getItem('ba_txs') || '[]'),
+    currentMonth: (JSON.parse(localStorage.getItem('ba_meta') || '{}')).currentMonth || CM,
+    sections: (JSON.parse(localStorage.getItem('ba_meta') || '{}')).sections || SECTIONS
+  };
+  try {
+    await appStorage.set(data);
+    alert('تم النقل بنجاح!');
+    load();
+  } catch (e) {
+    alert('فشل النقل: ' + e.message);
+  }
+}
+
+function doDrive(){
+  const data={tenants:T,payments:P,transactions:TX,currentMonth:CM,sections:SECTIONS};
+  const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='برج_الامل_'+CM+'.json';a.click();
+}
+
+function sw(id,el){
+  const sec=SECTIONS.find(s=>s.id===id);
+  if(!sec)return;
+  CSID=id;
+  if(sec.type==='floors') lastFloorsSid=id;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  
+  const targetId = sec.type==='floors' ? 'floors' : id;
+  const targetEl = document.getElementById('sec-'+targetId);
+  if(targetEl) targetEl.classList.add('on');
+
+  closeMdl();
+  if(sec.type==='floors')renderFloors();
+  if(id==='tenants')renderTenants();
+  if(id==='settings'){renderEditList();renderSectionsList();}
+  if(id==='txs'){txPage=1;renderTxs();}
+}
+
+const gP=(f,p,sid=CSID)=>{const mK=mk(CM),u=uk(sid,f,p);if(!P[mK])P[mK]={};if(!P[mK][u])P[mK][u]=[];return P[mK][u];};
+const gTP=(f,p,sid=CSID)=>gP(f,p,sid).reduce((s,x)=>s+x.amount,0);
+const gTPInc=(f,p,sid=CSID)=>gP(f,p,sid).filter(x=>x.addedToIncome).reduce((s,x)=>s+x.amount,0);
+const gT=(f,p,sid=CSID)=>{
+  const loc = uk(sid,f,p);
+  const name = M[loc];
+  return name ? T[name] : null;
+};
+
+const parseUK=(u)=>{
+  const parts=u.split('_');
+  if(parts.length===2)return{sid:'floors',f:+parts[0],p:+parts[1]};
+  const p = +parts.pop();
+  const f = +parts.pop();
+  const sid = parts.join('_');
+  return {sid, f, p};
+};
+
+function refreshAll(){document.getElementById('mpick').value=CM;renderStats();renderFloors();}
+
+function renderStats(){
+  const txInc=TX.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const txExp=TX.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  let payInc=0;
+  Object.values(P).forEach(month=>{Object.values(month).forEach(arr=>{arr.forEach(p=>{if(p.addedToIncome&&!p.txId)payInc+=p.amount;});});});
+  const totalInc=txInc+payInc;
+  document.getElementById('s-inc').textContent=fmt(totalInc)+' ج';
+  document.getElementById('s-exp').textContent=fmt(txExp)+' ج';
+  document.getElementById('s-bal').textContent=fmt(totalInc-txExp)+' ج';
+  let paid=0,total=0;
+  const uniqueNames=[...new Set(Object.values(M))];
+  uniqueNames.forEach(name=>{
+    const t=T[name];
+    if(!t || t.closed) return;
+    total++;
+    let hasPaid = false;
+    Object.entries(M).forEach(([loc, tName]) => {
+      if (tName === name) {
+        const parts = parseUK(loc);
+        if (gTP(parts.f, parts.p, parts.sid) > 0) hasPaid = true;
+      }
+    });
+    if (hasPaid) paid++;
+  });
+  document.getElementById('s-paid').textContent=paid+'/'+total;
+}
+
+function renderFloors(){
+  const sec=SECTIONS.find(s=>s.id===CSID);
+  if(sec){
+    const titleEl=document.getElementById('current-sec-title');
+    if(titleEl) titleEl.textContent=(sec.icon||'🏠')+' '+sec.title;
+  }
+  const tb=document.getElementById('ftbody');tb.innerHTML='';
+  for(let f=0;f<13;f++){
+    const tr=document.createElement('tr');
+    const td0=document.createElement('td');td0.className='lbl';td0.textContent=FN[f];tr.appendChild(td0);
+    for(const p of COL){
+      const td=document.createElement('td');
+      const t=gT(f,p);
+      if(!t||!t.name){const d=document.createElement('div');d.className='uc em';td.appendChild(d);tr.appendChild(td);continue;}
+      const pa=gTP(f,p),paI=gTPInc(f,p);
+      const d=document.createElement('div');const dot=document.createElement('div');
+      if(t.closed){d.className='uc cl';dot.className='dot x';}
+      else if(pa>0&&paI>0){d.className='uc paid';dot.className='dot g';}
+      else if(pa>0){d.className='uc paid-no';dot.className='dot y';}
+      else{d.className='uc';dot.className='dot r';}
+      const nm=document.createElement('span');nm.className='uc-name';nm.textContent=t.name;nm.title=t.name+(t.notes?' ('+t.notes+')':'');
+      d.appendChild(dot);d.appendChild(nm);
+      if(!t.closed&&pa>0){const b=document.createElement('span');b.className='uc-amt';b.style.color=paI>0?'#16a34a':'#d97706';b.textContent=fmt(pa)+' ج';d.appendChild(b);}
+      if(!t.closed)d.onclick=()=>openMdl(f,p,CSID);
+      td.appendChild(d);tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+}
+
+function bgClick(e){if(e.target===document.getElementById('popup-bg'))closeMdl();}
+function selectOpt(yes){
+  addToIncome=yes;
+  document.getElementById('opt-yes').className='toggle-opt '+(yes?'sel-yes':'');
+  document.getElementById('opt-no').className='toggle-opt '+(yes?'':'sel-no');
+  document.getElementById('r-yes').checked=yes;document.getElementById('r-no').checked=!yes;
+  updPreview();
+}
+function updPreview(){
+  const amt=parseFloat(document.getElementById('m-amt').value)||0;
+  const el=document.getElementById('m-preview');
+  if(!amt){el.textContent='';return;}
+  el.innerHTML=addToIncome
+    ?'<span style="color:#16a34a;font-weight:500">سيُضاف +'+fmt(amt)+' ج للإيرادات والرصيد</span>'
+    :'<span style="color:#d97706;font-weight:500">تسجيل فقط — بدون تغيير الرصيد</span>';
+}
+function openMdl(f,p,sid=CSID){
+  openUnit={f,p,sid};addToIncome=true;
+  document.getElementById('opt-yes').className='toggle-opt sel-yes';
+  document.getElementById('opt-no').className='toggle-opt';
+  document.getElementById('r-yes').checked=true;document.getElementById('r-no').checked=false;
+  const t=gT(f,p,sid);if(!t)return;
+  const ini=(t.name||'؟').split(' ').slice(0,2).map(w=>w[0]).join('');
+  document.getElementById('m-av').textContent=ini;
+  document.getElementById('m-nm').textContent=t.name;
+  const sec=SECTIONS.find(s=>s.id===sid);
+  document.getElementById('m-loc').textContent=(sec?sec.title:'')+' — '+FN[f]+' — '+PN[p]+(t.notes?' · '+t.notes:'');
+  document.getElementById('m-ph').innerHTML=t.phone?'📞 '+t.phone:'';
+  document.getElementById('m-month').textContent=CM;
+  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  document.getElementById('m-amt').value='';document.getElementById('m-note').value='';
+  document.getElementById('m-preview').textContent='';
+  renderHist(f,p,sid);
+  document.getElementById('popup-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('m-amt').focus(),50);
+}
+function recPay(){
+  if(!openUnit)return;
+  const{f,p,sid}=openUnit;
+  const amt=parseFloat(document.getElementById('m-amt').value);
+  if(!amt||amt<=0)return;
+  const note=(document.getElementById('m-note').value||'').trim();
+  const t=gT(f,p,sid);
+  const payId=Date.now();
+  if(addToIncome&&t){
+    const txId=payId+1;
+    const sec=SECTIONS.find(s=>s.id===sid);
+    const baseNote='دفعة — '+t.name+' ('+(sec?sec.title:'')+'، '+FN[f]+'، '+PN[p]+')';
+    const txNote=note?baseNote+' — '+note:baseNote;
+    TX.unshift({id:txId,date:todayStr(),type:'income',amount:amt,note:txNote});
+    gP(f,p,sid).push({id:payId,amount:amt,note,date:todayStr(),addedToIncome:true,txId});
+  }else{
+    gP(f,p,sid).push({id:payId,amount:amt,note,date:todayStr(),addedToIncome:addToIncome});
+  }
+  document.getElementById('m-amt').value='';document.getElementById('m-note').value='';
+  document.getElementById('m-preview').textContent='';
+  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  renderHist(f,p,sid);renderStats();renderFloors();autoSave();
+}
+function renderHist(f,p,sid=CSID){
+  const el=document.getElementById('m-hist'),pays=gP(f,p,sid);
+  if(!pays.length){el.innerHTML='<div style="font-size:12px;color:#aaa;padding:4px 0">لا توجد مدفوعات هذا الشهر بعد</div>';return;}
+  el.innerHTML=pays.map((px,i)=>`<div class="pi">
+    <span style="flex:1">${px.date}${px.note?' — '+px.note:''} <span style="font-size:10px;padding:1px 5px;border-radius:4px;background:${px.addedToIncome?'#dcfce7':'#fef9c3'};color:${px.addedToIncome?'#15803d':'#854d0e'}">${px.addedToIncome?'إيراد':'تسجيل'}</span></span>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+      <span style="color:#16a34a;font-weight:600">+${fmt(px.amount)} ج</span>
+      <button onclick="delPay(${f},${p},${i},'${sid}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
+    </div>
+  </div>`).join('');
+}
+function delPay(f,p,i,sid=CSID){
+  const mK=mk(CM),u=uk(sid,f,p);
+  if(P[mK]&&P[mK][u]){
+    const px=P[mK][u][i];
+    if(px&&px.txId)TX=TX.filter(t=>t.id!==px.txId);
+    P[mK][u].splice(i,1);
+  }
+  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  renderHist(f,p,sid);renderStats();renderFloors();autoSave();
+}
+function closeMdl(){document.getElementById('popup-bg').classList.remove('open');openUnit=null;}
+
+function renderTenants(){
+  const el=document.getElementById('tenants-list');
+  const uniqueNames = [...new Set(Object.values(M))].filter(name => T[name] && T[name].name);
+  const entries = uniqueNames.map(name => {
+    const firstLoc = Object.keys(M).find(k => M[k] === name) || '';
+    const info = firstLoc ? parseUK(firstLoc) : {sid:'',f:0,p:0};
+    return [name, T[name], info];
+  }).sort((a,b)=>a[2].sid.localeCompare(b[2].sid)||a[2].f-b[2].f||a[2].p-b[2].p);
+  if(!entries.length){el.innerHTML='<div style="color:#aaa;font-size:13px;text-align:center;padding:1rem">لا يوجد سكان</div>';return;}
+  el.innerHTML=entries.map(([name,t,info])=>{
+    // Sum payments across ALL locations for this resident
+    let totalPaid = 0;
+    Object.entries(M).forEach(([loc, tName]) => {
+      if (tName === name) {
+        const {sid, f, p} = parseUK(loc);
+        totalPaid += gTP(f, p, sid);
+      }
+    });
+    const sections = [...new Set(
+      Object.entries(M).filter(([,n])=>n===name).map(([loc])=>{
+        const {sid,f,p}=parseUK(loc);
+        const sec=SECTIONS.find(s=>s.id===sid);
+        return (sec?sec.title:sid)+' — '+FN[f]+' — '+PN[p];
+      })
+    )];
+    const locInfo = sections.join(' · ');
+    return `<div class="ti" style="${t.closed?'opacity:.45':''}">
+      <div class="av" style="width:34px;height:34px;font-size:11px">${(t.name||'؟').split(' ').slice(0,2).map(w=>w[0]).join('')}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}${t.closed?' (مغلق)':''}</div><div style="font-size:11px;color:#888">${locInfo}${t.notes&&!t.closed?' · '+t.notes:''}</div></div>
+      <div style="font-size:13px;font-weight:600;color:${totalPaid>0?'#16a34a':'#aaa'};white-space:nowrap">${totalPaid>0?fmt(totalPaid)+' ج':'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTxs(){
+  const filter=document.getElementById('tx-filter').value;
+  const search=document.getElementById('tx-search').value.toLowerCase();
+  let list=[...TX].sort((a,b)=>b.date.localeCompare(a.date)||(b.id-a.id));
+  if(filter!=='all')list=list.filter(t=>t.type===filter);
+  if(search)list=list.filter(t=>t.note.toLowerCase().includes(search)||t.date.includes(search));
+  const total=list.length,pages=Math.max(1,Math.ceil(total/PER));
+  if(txPage>pages)txPage=pages;
+  const start=(txPage-1)*PER,slice=list.slice(start,start+PER);
+  document.getElementById('tx-count').textContent=total+' عملية';
+  const el=document.getElementById('txlist');
+  if(!slice.length){el.innerHTML='<div style="color:#aaa;font-size:13px;text-align:center;padding:1rem">لا توجد عمليات</div>';}
+  else{el.innerHTML=slice.map(t=>`<div class="txi">
+    <div style="flex:1;min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.note}">${t.note||'بدون بيان'}</div><div style="font-size:11px;color:#aaa">${t.date}</div></div>
+    <span style="font-weight:600;white-space:nowrap;color:${t.type==='income'?'#16a34a':'#dc2626'}">${t.type==='income'?'+':'-'}${fmt(t.amount)} ج</span>
+    <button onclick="delTx(${t.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
+  </div>`).join('');}
+  const pgn=document.getElementById('pgn');
+  if(pages<=1){pgn.innerHTML='';return;}
+  let html=`<button class="pgn-btn" onclick="goPage(${txPage-1})" ${txPage===1?'disabled':''}>‹ السابق</button>`;
+  let s=Math.max(1,txPage-2),e=Math.min(pages,s+4);s=Math.max(1,e-4);
+  if(s>1)html+=`<button class="pgn-btn" onclick="goPage(1)">1</button>${s>2?'<span class="pgn-info">…</span>':''}`;
+  for(let i=s;i<=e;i++)html+=`<button class="pgn-btn${i===txPage?' on':''}" onclick="goPage(${i})">${i}</button>`;
+  if(e<pages)html+=`${e<pages-1?'<span class="pgn-info">…</span>':''}<button class="pgn-btn" onclick="goPage(${pages})">${pages}</button>`;
+  html+=`<button class="pgn-btn" onclick="goPage(${txPage+1})" ${txPage===pages?'disabled':''}>التالي ›</button>`;
+  html+=`<span class="pgn-info">${start+1}–${Math.min(start+PER,total)} من ${total}</span>`;
+  pgn.innerHTML=html;
+}
+function goPage(p){txPage=p;renderTxs();}
+function addTx(){
+  const date=document.getElementById('tx-d').value,type=document.getElementById('tx-t').value;
+  const amount=parseFloat(document.getElementById('tx-a').value),note=document.getElementById('tx-n').value;
+  if(!date||!amount||amount<=0)return;
+  TX.unshift({id:Date.now(),date,type,amount,note});
+  document.getElementById('tx-a').value='';document.getElementById('tx-n').value='';
+  txPage=1;renderStats();renderTxs();autoSave();
+}
+function delTx(id){
+  Object.keys(P).forEach(mK=>{
+    const mo=P[mK];if(!mo)return;
+    Object.keys(mo).forEach(u=>{
+      const arr=mo[u];if(!arr||!arr.length)return;
+      for(let i=arr.length-1;i>=0;i--){
+        if(arr[i].txId===id)arr.splice(i,1);
+      }
+    });
+  });
+  TX=TX.filter(t=>t.id!==id);
+  renderStats();renderFloors();renderTxs();renderTenants();
+  if(openUnit){
+    const{f,p,sid}=openUnit;
+    const pt=document.getElementById('m-ptot');
+    if(pt)pt.textContent=fmt(gTP(f,p,sid))+' ج';
+    renderHist(f,p,sid);
+  }
+  autoSave();
+}
+
+function renderTabs(){
+  const bar=document.getElementById('tabs-bar');
+  bar.innerHTML=SECTIONS.filter(s=>s.visible).map(s=>`<div class="tab${s.id===CSID?' on':''}" onclick="sw('${s.id}',this)">${s.icon||''} ${s.title}</div>`).join('');
+}
+
+function renderSectionsList(){
+  const el=document.getElementById('sections-list');
+  el.innerHTML=SECTIONS.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0">
+    <span style="flex:1;font-size:13px">${s.title} <span style="color:#aaa;font-size:11px">(${s.id})</span></span>
+    <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" ${s.visible?'checked':''} onchange="toggleSection(${i},this.checked)"> ظاهر</label>
+    ${s.id!=='floors'&&s.id!=='tenants'&&s.id!=='txs'&&s.id!=='settings'?`<button onclick="delSection(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1">×</button>`:''}
+  </div>`).join('');
+}
+
+function addSection(){
+  const name=document.getElementById('new-sec-name').value.trim();
+  if(!name){alert('Please enter a name for the new section');return;}
+  const id='sec_'+Date.now();
+
+  SECTIONS.splice(1,0,{id,title:name,type:'floors',visible:true,icon:'🏠'});
+
+  // Auto-copy resident mappings from الأدار to the new section
+  Object.entries(M).forEach(([loc, tName]) => {
+    const {sid, f, p} = parseUK(loc);
+    if (sid === 'floors') { M[uk(id, f, p)] = tName; }
+  });
+
+  document.getElementById('new-sec-name').value='';
+  renderTabs();renderSectionsList();populateSectionSel();autoSave();
+}
+function toggleSection(i,v){
+  SECTIONS[i].visible=v;
+  renderTabs();autoSave();
+}
+
+function delSection(i){
+  if(!confirm('هل أنت متأكد من حذف هذا القسم؟ سيتم حذف بيانات المدفوعات المرتبطة به فقط (السكان مشتركون).'))return;
+  const sid=SECTIONS[i].id;
+  // Remove M mappings for this section only (tenants are shared)
+  Object.keys(M).forEach(k => { const {sid: kSid} = parseUK(k); if (kSid === sid) delete M[k]; });
+  // Delete payments for this section
+  Object.keys(P).forEach(mK=>{if(P[mK]){Object.keys(P[mK]).forEach(u=>{if(u.startsWith(sid+'_'))delete P[mK][u];});}});
+  SECTIONS.splice(i,1);
+  if(CSID===sid)CSID='floors';
+  renderTabs();renderSectionsList();populateSectionSel();refreshAll();autoSave();
+}
+
+function populateFSel(){
+  document.getElementById('at-f').innerHTML=FN.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+  populateSectionSel();
+}
+function populateSectionSel(){
+  const sel=document.getElementById('at-s');
+  if(!sel)return;
+  const floorSections=SECTIONS.filter(s=>s.type==='floors');
+  sel.innerHTML=floorSections.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
+}
+function saveTenant(){
+  const name=document.getElementById('at-n').value.trim();if(!name){alert('أدخل الاسم');return;}
+  const f=parseInt(document.getElementById('at-f').value),p=parseInt(document.getElementById('at-pos').value);
+  const sid=document.getElementById('at-s').value;
+  const loc=uk(sid,f,p);
+  const cl=document.getElementById('at-cl').checked;
+  
+  // If editing and name changed, migrate mapping
+  if (editKey && editKey !== name) {
+    Object.keys(M).forEach(k => { if(M[k] === editKey) M[k] = name; });
+    delete T[editKey];
+  }
+
+  T[name] = {
+    name,
+    phone: document.getElementById('at-p').value.trim(),
+    notes: document.getElementById('at-nt').value.trim(),
+    closed: cl
+  };
+  M[loc] = name;
+  
+  closeEditMdl();renderEditList();refreshAll();autoSave();
+}
+function openAddTenant(){
+  cancelEdit();
+  document.getElementById('edit-popup-bg').classList.add('open');
+}
+function editTenant(name){
+  const t=T[name];if(!t)return;
+  editKey=name;
+  document.getElementById('at-n').value=t.name||'';document.getElementById('at-p').value=t.phone||'';
+  document.getElementById('at-nt').value=t.notes||'';
+  document.getElementById('at-cl').checked=!!t.closed;
+  
+  const loc = Object.keys(M).find(k => M[k] === name);
+  if (loc) {
+    const info = parseUK(loc);
+    document.getElementById('at-s').value=info.sid;
+    document.getElementById('at-f').value=info.f;
+    document.getElementById('at-pos').value=info.p;
+  }
+
+  document.getElementById('at-title').textContent='تعديل بيانات الساكن';
+  document.getElementById('edit-popup-bg').classList.add('open');
+}
+function cancelEdit(){
+  editKey=null;['at-n','at-p','at-nt'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('at-cl').checked=false;
+  document.getElementById('at-title').textContent='+ إضافة / تعديل ساكن';
+}
+function closeEditMdl(){
+  document.getElementById('edit-popup-bg').classList.remove('open');
+  cancelEdit();
+}
+function delTenant(name){
+  if(!confirm('حذف '+name+'؟ سيتم حذفه من جميع الأقسام.'))return;
+  delete T[name];
+  Object.keys(M).forEach(k => { if(M[k] === name) delete M[k]; });
+  renderEditList();refreshAll();autoSave();
+}
+function renderEditList(){
+  const el=document.getElementById('edit-list');
+  // Show unique residents by name
+  const uniqueNames = [...new Set(Object.values(M))].filter(name => T[name] && T[name].name);
+  const sorted = uniqueNames.map(name => {
+    const firstLoc = Object.keys(M).find(k => M[k] === name) || '';
+    const info = firstLoc ? parseUK(firstLoc) : {sid:'',f:0,p:0};
+    return [name, T[name], info];
+  }).sort((a,b)=>a[2].sid.localeCompare(b[2].sid)||a[2].f-b[2].f||a[2].p-b[2].p);
+  if(!sorted.length){el.innerHTML='<div style="color:#aaa;font-size:13px">لا يوجد سكان</div>';document.getElementById('edit-pgn').innerHTML='';return;}
+
+  const T_PER = 10;
+  const total=sorted.length, pages=Math.max(1, Math.ceil(total/T_PER));
+  if(tenantPage>pages) tenantPage=pages;
+  const start=(tenantPage-1)*T_PER, slice=sorted.slice(start, start+T_PER);
+
+  el.innerHTML=slice.map(([name,t,info])=>{
+    const sections = [...new Set(
+      Object.entries(M).filter(([,n])=>n===name).map(([loc])=>{
+        const {sid,f,p}=parseUK(loc);
+        const sec=SECTIONS.find(s=>s.id===sid);
+        return (sec?sec.title:sid)+' — '+FN[f]+' — '+PN[p];
+      })
+    )];
+    const locInfo = sections.join(' · ');
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0">
+      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name} ${t.phone ? `<span style="color:#2563eb;font-size:12px;margin-right:5px">📞 ${t.phone}</span>` : ''} <span style="color:#aaa;font-size:11px">${locInfo}</span></span>
+      <button class="btn sm" onclick="editTenant('${name}')">✏ تعديل</button>
+      <button onclick="delTenant('${name}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>`;
+  }).join('');
+  const pgn=document.getElementById('edit-pgn');
+  if(pages<=1){pgn.innerHTML='';return;}
+  let html=`<button class="pgn-btn" onclick="goTenantPage(${tenantPage-1})" ${tenantPage===1?'disabled':''}>‹ السابق</button>`;
+  let s=Math.max(1,tenantPage-2), e=Math.min(pages, s+4); s=Math.max(1, e-4);
+  if(s>1) html+=`<button class="pgn-btn" onclick="goTenantPage(1)">1</button>${s>2?'<span class="pgn-info">…</span>':''}`;
+  for(let i=s;i<=e;i++) html+=`<button class="pgn-btn${i===tenantPage?' on':''}" onclick="goTenantPage(${i})">${i}</button>`;
+  if(e<pages) html+=`${e<pages-1?'<span class="pgn-info">…</span>':''}<button class="pgn-btn" onclick="goTenantPage(${pages})">${pages}</button>`;
+  html+=`<button class="pgn-btn" onclick="goTenantPage(${tenantPage+1})" ${tenantPage===pages?'disabled':''}>التالي ›</button>`;
+  html+=`<span class="pgn-info">${start+1}–${Math.min(start+T_PER,total)} من ${total}</span>`;
+  pgn.innerHTML=html;
+}
+function goTenantPage(p){tenantPage=p;renderEditList();}
+load();
+</script>
