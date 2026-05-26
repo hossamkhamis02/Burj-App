@@ -37,14 +37,24 @@ body{direction:rtl;font-family:'Segoe UI',Tahoma,Arial,sans-serif;font-size:14px
 .ftable td{padding:5px;vertical-align:middle;border-bottom:1px solid #f0f0f0}
 .ftable td.lbl{font-size:13px;font-weight:600;color:#666;padding:5px 10px;text-align:right;background:#fcfcfb}
 .ftable tr:hover td{background:#fafaf8}
-.uc{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:6px;background:#f3f3f0;border:1px solid transparent;cursor:pointer;min-height:42px;transition:border-color .1s}
+.uc{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:6px;background:#f3f3f0;border:1px solid transparent;cursor:pointer;min-height:42px;transition:border-color .1s,opacity .1s}
 .uc:hover{border-color:#bbb}
 .uc.paid{border-color:#16a34a;background:#f0fdf4}
-.uc.paid-no{border-color:#d97706;background:#fffbeb}
-.uc.cl{cursor:default;opacity:.4;background:#e5e5e0}
+.uc.part-paid{border-color:#d97706;background:#fffbeb}
+.uc.part-paid:hover{border-color:#b45309}
+.uc.not-paid{border-color:#fca5a5;background:#fef2f2}
+.uc.not-paid:hover{border-color:#ef4444}
+.uc.cl{cursor:pointer;opacity:.5;background:#e8e8e4;border:1px dashed #bbb}
+.uc.cl:hover{opacity:.7;border-color:#888}
+/* Amber: closed in this section only (per-section override) */
+.uc.cl-sec{cursor:pointer;opacity:.7;background:#fef3c7;border:1px dashed #d97706}
+.uc.cl-sec:hover{opacity:.9;border-color:#b45309}
+/* Green tint: globally closed but explicitly opened in this section */
+.uc.cl-open{border:1px solid #6ee7b7;background:#f0fdf4}
+.uc.cl-open:hover{border-color:#10b981}
 .uc.em{background:transparent;border:none;cursor:default}
 .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot.g{background:#16a34a}.dot.y{background:#d97706}.dot.r{background:#ef4444}.dot.x{background:#aaa}
+.dot.g{background:#16a34a}.dot.y{background:#d97706}.dot.r{background:#ef4444}.dot.x{background:#aaa}.dot.o{background:#d97706}
 .uc-name{font-size:13px;font-weight:500;color:#1a1a1a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
 .uc-amt{font-size:14px;font-weight:700;white-space:nowrap;flex-shrink:0}
 /* POPUP */
@@ -68,7 +78,7 @@ body{direction:rtl;font-family:'Segoe UI',Tahoma,Arial,sans-serif;font-size:14px
 .toggle-opt input[type=radio]{accent-color:#16a34a;width:15px;height:15px;flex-shrink:0}
 .tl{font-size:13px;font-weight:500;color:#1a1a1a}
 .ts{font-size:11px;color:#888;margin-top:1px}
-input[type=text],input[type=number],input[type=date],select{padding:6px 9px;font-size:13px;border:1px solid #ccc;border-radius:7px;background:#fff;color:#1a1a1a;width:100%;font-family:inherit}
+input[type=text],input[type=number],input[type=date],input[type=month],select{padding:6px 9px;font-size:13px;border:1px solid #ccc;border-radius:7px;background:#fff;color:#1a1a1a;width:100%;font-family:inherit}
 input:focus,select:focus{outline:none;border-color:#888}
 .ig{display:flex;flex-direction:column;gap:4px}
 .ig label{font-size:11px;color:#666}
@@ -88,6 +98,20 @@ input:focus,select:focus{outline:none;border-color:#888}
 @media (max-width:600px){
   .grid-2, .grid-3{grid-template-columns:1fr}
 }
+.sec-closed-box{border:1px solid #e5e5e0;border-radius:8px;padding:8px 10px;margin-top:8px;background:#fafaf8}
+.sec-closed-title{font-size:11px;color:#888;margin-bottom:6px;font-weight:500}
+/* CLOSED MINI MENU */
+.cl-menu-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200}
+.cl-menu-bg.open{display:block}
+.cl-menu{position:fixed;background:#fff;border:1px solid #e5e5e0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);padding:14px;min-width:230px;z-index:201}
+.cl-menu-hd{font-size:13px;font-weight:600;margin-bottom:4px;color:#1a1a1a}
+.cl-menu-sub{font-size:11px;color:#888;margin-bottom:12px}
+.cl-menu-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border-radius:7px;border:1px solid #e5e5e0;background:#fff;font-size:13px;cursor:pointer;margin-bottom:7px;font-family:inherit;color:#1a1a1a;transition:background .1s}
+.cl-menu-btn:hover{background:#f3f3f0}
+.cl-menu-btn.g{border-color:#16a34a;color:#16a34a}
+.cl-menu-btn.y{border-color:#d97706;color:#d97706}
+.cl-menu-btn.r{border-color:#dc2626;color:#dc2626}
+.cl-menu-btn:last-child{margin-bottom:0}
 </style>
 
 <div class="w" id="root">
@@ -110,15 +134,17 @@ input:focus,select:focus{outline:none;border-color:#888}
   <div class="sc"><div class="sc-l">الرصيد الحالي</div><div class="sc-v b" id="s-bal">0 ج</div></div>
   <div class="sc"><div class="sc-l">إجمالي الإيرادات</div><div class="sc-v g" id="s-inc">0 ج</div></div>
   <div class="sc"><div class="sc-l">إجمالي المصروفات</div><div class="sc-v r" id="s-exp">0 ج</div></div>
-  <div class="sc"><div class="sc-l">دفعوا هذا الشهر</div><div class="sc-v" id="s-paid">0/0</div></div>
+  <div class="sc"><div class="sc-l" id="s-paid-label">دفعوا هذا الشهر</div><div class="sc-v" id="s-paid">0/0</div></div>
 </div>
 
 <div class="tabs" id="tabs-bar">
   <div class="tab on" onclick="sw('floors',this)">🏠 الأدوار</div>
   <div class="tab" onclick="sw('tenants',this)">👥 السكان</div>
   <div class="tab" onclick="sw('txs',this)">🧾 العمليات</div>
+  <div class="tab" onclick="sw('arrears',this)">⏳ متأخرات</div>
   <div class="tab" onclick="sw('settings',this)">⚙ الإعدادات</div>
 </div>
+
 
 <div class="sec on" id="sec-floors">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px;flex-wrap:wrap;gap:8px">
@@ -162,6 +188,88 @@ input:focus,select:focus{outline:none;border-color:#888}
   <div class="pgn" id="pgn"></div>
 </div>
 
+<div class="sec" id="sec-arrears">
+  <div class="card">
+    <div class="card-t">+ إضافة متأخرات جديدة</div>
+    <div class="grid-3" style="margin-bottom:8px">
+      <div class="ig"><label>الساكن</label><select id="arr-tenant"></select></div>
+      <div class="ig"><label>المبلغ (ج)</label><input type="number" id="arr-amount" placeholder="0" min="0"></div>
+      <div class="ig"><label>التاريخ</label><input type="date" id="arr-date"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="ig" style="flex:1;min-width:200px"><label>البيان / ملاحظات</label><input type="text" id="arr-notes" placeholder="ملاحظات حول المتأخرات..."></div>
+      <div class="ig" style="flex-direction:row;align-items:center;gap:8px;padding-top:14px">
+        <input type="checkbox" id="arr-autotx" checked style="width:18px;height:18px;cursor:pointer">
+        <label for="arr-autotx" style="font-size:13px;color:#1a1a1a;cursor:pointer">تسجيل كعملية إيراد تلقائياً عند السداد</label>
+      </div>
+      <button class="btn g" style="align-self:flex-end;flex-shrink:0" onclick="addArrear()">حفظ</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="card" style="margin-bottom:0; padding: 10px 14px">
+      <div class="card-t" style="margin-bottom:8px; font-size:13px; color:#666">🔍 تصفية المتأخرات</div>
+      <div class="grid-2">
+        <div class="ig">
+          <label>القسم / الورقة</label>
+          <select id="arr-filter-sheet" onchange="renderArrears()">
+            <option value="all">كل الأقسام</option>
+          </select>
+        </div>
+        <div class="ig">
+          <label>الشهر / التاريخ</label>
+          <div style="display:flex; gap:6px; align-items:center">
+            <input type="month" id="arr-filter-date" onchange="renderArrears()" style="flex:1">
+            <button class="btn" style="padding: 6px 12px; font-size: 13px; border-color: #ccc; flex-shrink:0" onclick="clearArrearFilters()">مسح</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-t" style="display:flex;justify-content:space-between;align-items:center">
+        <span>⏳ متأخرات قيد المتابعة</span>
+        <span id="active-arr-count" style="font-size:12px;color:#888">0 عملية</span>
+      </div>
+      <div class="table-w">
+        <table class="ftable">
+          <thead>
+            <tr>
+              <th>الساكن</th>
+              <th>المبلغ</th>
+              <th>التاريخ</th>
+              <th>ملاحظات</th>
+              <th>خيارات السداد</th>
+              <th>حذف</th>
+            </tr>
+          </thead>
+          <tbody id="arr-active-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-t" style="display:flex;justify-content:space-between;align-items:center">
+        <span>✅ سجل المتأخرات المسددة</span>
+        <span id="paid-arr-count" style="font-size:12px;color:#888">0 عملية</span>
+      </div>
+      <div class="table-w">
+        <table class="ftable">
+          <thead>
+            <tr>
+              <th>الساكن</th>
+              <th>المبلغ</th>
+              <th>تاريخ التسجيل</th>
+              <th>تاريخ السداد</th>
+              <th>ملاحظات</th>
+              <th>حذف</th>
+            </tr>
+          </thead>
+          <tbody id="arr-paid-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="sec" id="sec-settings">
   <div style="margin-bottom:12px;display:flex;justify-content:flex-end">
     <button class="btn g" onclick="openAddTenant()">+ إضافة ساكن جديد</button>
@@ -170,7 +278,8 @@ input:focus,select:focus{outline:none;border-color:#888}
     <div class="card-t">إدارة الأقسام</div>
     <div id="sections-list"></div>
     <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-      <input type="text" id="new-sec-name" placeholder="اسم القسم الجديد (مثلاً: مبنى ب)" style="flex:1;min-width:150px">
+      <input type="text" id="new-sec-name" placeholder="اسم القسم الجديد (مثلاً: مبنى ب)" style="flex:2;min-width:150px">
+      <input type="number" id="new-sec-fee" placeholder="المبلغ الافتراضي (مثلاً: 125)" style="flex:1;min-width:100px" min="0">
       <button class="btn g" onclick="addSection()">+ إضافة نسخة من "الأدوار"</button>
     </div>
   </div>
@@ -191,18 +300,35 @@ input:focus,select:focus{outline:none;border-color:#888}
     <div class="grid-2" style="margin-bottom:15px">
       <div class="ig"><label>الاسم الكامل</label><input type="text" id="at-n" placeholder="الاسم"></div>
       <div class="ig"><label>رقم التليفون</label><input type="text" id="at-p" placeholder="01X..."></div>
-      <div class="ig"><label>القسم / المبنى</label><select id="at-s"></select></div>
+      <div class="ig"><label>الموقع</label><div style="font-size:12px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 8px">🔗 يظهر في جميع الأقسام تلقائياً</div></div>
       <div class="ig"><label>الطابق</label><select id="at-f"></select></div>
       <div class="ig"><label>الموقع</label><select id="at-pos"><option value="2">يمين</option><option value="1">وسط</option><option value="0">يسار</option></select></div>
       <div class="ig"><label>ملاحظات</label><input type="text" id="at-nt" placeholder="مستأجر / مالك..."></div>
       <div class="ig" style="flex-direction:row;align-items:center;gap:8px;grid-column: span 2;padding-top:5px">
-        <input type="checkbox" id="at-cl" style="width:20px;height:20px;cursor:pointer">
-        <label for="at-cl" style="font-size:13px;color:#1a1a1a;cursor:pointer">مغلق / غير نشط (لا يظهر في إحصائيات الدفع)</label>
+        <input type="checkbox" id="at-cl-global" style="width:20px;height:20px;cursor:pointer">
+        <label for="at-cl-global" style="font-size:13px;color:#1a1a1a;cursor:pointer">مغلق كونياً (في كل الأقسام)</label>
+      </div>
+      <div id="at-fees-section" style="grid-column: span 2; border-top: 1px solid #e5e5e0; margin-top: 10px; padding-top: 10px">
+        <div style="font-size:11px;font-weight:600;color:#666;margin-bottom:6px">المبالغ المطلوبة المخصصة لهذا الساكن (اترك الحقل فارغاً لاستخدام قيمة القسم الافتراضية):</div>
+        <div id="at-fees-inputs" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div style="grid-column: span 2;font-size:11px;color:#888;padding-top:2px">
+        💡 لتغيير الحالة لقسم معين: اضغط على خلية الساكن مباشرةً في صفحة الأدوار
       </div>
     </div>
     <button class="btn g" style="width:100%;justify-content:center;padding:10px;font-size:14px" onclick="saveTenant()">✓ حفظ بيانات الساكن</button>
     <div style="font-size:11px;color:#aaa;margin-top:12px;text-align:center">🔒 التليفون لا يظهر في الأدوار</div>
   </div>
+</div>
+
+<!-- CLOSED MINI MENU -->
+<div class="cl-menu-bg" id="cl-menu-bg" onclick="closeClMenu()"></div>
+<div class="cl-menu" id="cl-menu" style="display:none">
+  <div class="cl-menu-hd" id="cl-menu-name"></div>
+  <div class="cl-menu-sub" id="cl-menu-sub"></div>
+  <button class="cl-menu-btn g" id="cl-menu-btn-primary" onclick="clMenuAction('primary')"></button>
+  <button class="cl-menu-btn y" id="cl-menu-btn-reset" onclick="clMenuAction('reset')">↩ إعادة للوضع الافتراضي</button>
+  <button class="cl-menu-btn" onclick="closeClMenu()">× إلغاء</button>
 </div>
 
 <!-- POPUP -->
@@ -221,7 +347,9 @@ input:focus,select:focus{outline:none;border-color:#888}
     </div>
     <div class="ibox">
       <div class="ir"><span class="ik">الشهر</span><span style="font-weight:600" id="m-month">-</span></div>
+      <div class="ir"><span class="ik">المبلغ المطلوب</span><div style="display:flex;align-items:center;gap:3px"><input type="number" id="m-req" min="0" style="width:70px;text-align:left;font-weight:600;color:#2563eb;padding:2px 5px;border:1px solid #ccc;border-radius:5px;font-family:inherit;height:24px" oninput="updReqAmount()" onchange="saveReqAmount()"><span style="font-weight:600;color:#2563eb">ج</span></div></div>
       <div class="ir"><span class="ik">إجمالي مدفوع هذا الشهر</span><span style="font-weight:600;color:#16a34a" id="m-ptot">0 ج</span></div>
+      <div class="ir"><span class="ik">المتبقي</span><span style="font-weight:600;color:#dc2626" id="m-rem">0 ج</span></div>
     </div>
     <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
       <div class="ig" style="flex:1"><label>المبلغ المدفوع (ج)</label><input type="number" id="m-amt" placeholder="0" min="0" oninput="updPreview()"></div>
@@ -295,14 +423,36 @@ const SEED_T={
 
 const SEED_TXS=[{"id":41,"date":"2025-09-25","type":"income","amount":1390,"note":"رصيد افتتاحي للعقار"},{"id":51,"date":"2025-10-24","type":"income","amount":2850,"note":"خدمات شهر 10"},{"id":62,"date":"2025-10-24","type":"expense","amount":2045,"note":"شحن كارت الكهرباء عن شهر 10"},{"id":72,"date":"2025-10-24","type":"expense","amount":200,"note":"تنظيف الخزانات"},{"id":82,"date":"2025-10-24","type":"expense","amount":50,"note":"شراء لمبات"},{"id":91,"date":"2025-10-24","type":"income","amount":25,"note":"بيع كارته اسانسير"},{"id":101,"date":"2025-10-25","type":"income","amount":250,"note":"متأخرات من الدور الخامس يسار"},{"id":112,"date":"2025-11-01","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 10"},{"id":122,"date":"2025-11-01","type":"expense","amount":250,"note":"صيانة DVR الكاميرات"},{"id":132,"date":"2025-11-01","type":"expense","amount":35,"note":"مكنسة للسلم"},{"id":141,"date":"2025-11-06","type":"income","amount":2050,"note":"خدمات شهر 11"},{"id":151,"date":"2025-11-08","type":"income","amount":25,"note":"بيع كارته اسانسير"},{"id":162,"date":"2025-11-08","type":"expense","amount":2040,"note":"شحن عداد الكهرباء عن شهر 11"},{"id":171,"date":"2025-11-08","type":"income","amount":100,"note":"خدمات شهر 11"},{"id":181,"date":"2025-11-15","type":"income","amount":305,"note":"خدمات شهر 11"},{"id":191,"date":"2025-11-15","type":"income","amount":125,"note":"بيع 5 كاراتات اسانسير"},{"id":202,"date":"2025-11-15","type":"expense","amount":80,"note":"صيانة ماتور المياه"},{"id":211,"date":"2025-11-16","type":"income","amount":125,"note":"خدمات نوفمبر"},{"id":221,"date":"2025-11-18","type":"income","amount":100,"note":"خدمات نوفمبر"},{"id":232,"date":"2025-11-23","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 11"},{"id":241,"date":"2025-11-22","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":252,"date":"2025-12-05","type":"expense","amount":2040,"note":"شحن عداد الكهرباء عن شهر 12"},{"id":261,"date":"2025-12-08","type":"income","amount":1500,"note":"خدمات شهر 12"},{"id":271,"date":"2025-12-08","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":281,"date":"2025-12-11","type":"income","amount":325,"note":"خدمات شهر 12"},{"id":291,"date":"2025-12-11","type":"income","amount":275,"note":"مقدم من استاذ ايمن الدور السابع"},{"id":301,"date":"2025-12-12","type":"income","amount":250,"note":"عم خليفة شهر 12 و 1"},{"id":311,"date":"2025-12-18","type":"income","amount":345,"note":"خدمات شهر 12 و 1"},{"id":321,"date":"2025-12-18","type":"income","amount":125,"note":"خدمات شهر 12 و 1"},{"id":331,"date":"2025-12-19","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":341,"date":"2025-12-19","type":"income","amount":100,"note":"خدمات شهر 12"},{"id":352,"date":"2025-12-20","type":"expense","amount":300,"note":"صيانة الاسانسير"},{"id":361,"date":"2025-12-22","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":371,"date":"2025-12-22","type":"income","amount":100,"note":"خدمات شهر 1"},{"id":382,"date":"2025-12-22","type":"expense","amount":200,"note":"نظافة الخزان"},{"id":391,"date":"2026-01-05","type":"income","amount":250,"note":"شهر 11 و 12 من هشام"},{"id":401,"date":"2026-01-05","type":"income","amount":100,"note":"شهر 12 ام كراس"},{"id":411,"date":"2026-01-05","type":"income","amount":625,"note":"خدمات شهر 12"},{"id":421,"date":"2026-01-08","type":"income","amount":1500,"note":"خدمات العمارة"},{"id":431,"date":"2026-01-11","type":"income","amount":450,"note":"خدمات العمارة"},{"id":441,"date":"2026-01-11","type":"income","amount":100,"note":"بيع 4 كارتات"},{"id":452,"date":"2026-01-11","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":462,"date":"2026-01-18","type":"expense","amount":600,"note":"كارتات 300 و صيانة اسانسير 300"},{"id":471,"date":"2026-01-18","type":"income","amount":375,"note":"خدمات شهر 1 و 2"},{"id":481,"date":"2026-01-22","type":"income","amount":125,"note":"خدمات شهر 1"},{"id":492,"date":"2026-01-26","type":"expense","amount":400,"note":"صيانة مروحة الاسانسير"},{"id":501,"date":"2026-01-26","type":"income","amount":125,"note":"خدمات شهر 2"},{"id":511,"date":"2026-01-26","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":521,"date":"2026-02-02","type":"income","amount":475,"note":"خدمات شهر 2"},{"id":531,"date":"2026-02-03","type":"income","amount":450,"note":"خدمات شهر 2"},{"id":541,"date":"2026-02-10","type":"income","amount":225,"note":"خدمات شهر 2"},{"id":551,"date":"2026-02-10","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":562,"date":"2026-02-10","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":572,"date":"2026-02-16","type":"expense","amount":300,"note":"صيانة اسانسير"},{"id":581,"date":"2026-02-16","type":"income","amount":1275,"note":"خدمات العقار"},{"id":592,"date":"2026-02-19","type":"expense","amount":220,"note":"تنظيف الخزانات"},{"id":602,"date":"2026-03-03","type":"expense","amount":300,"note":"صيانة اسانسير"},{"id":611,"date":"2026-03-03","type":"income","amount":725,"note":"خدمات شهر 3"},{"id":621,"date":"2026-03-04","type":"income","amount":575,"note":"خدمات شهر 3"},{"id":631,"date":"2026-03-04","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":641,"date":"2026-03-05","type":"income","amount":600,"note":"خدمات الشهر"},{"id":651,"date":"2026-03-10","type":"income","amount":525,"note":"خدمات الشهر"},{"id":661,"date":"2026-03-12","type":"income","amount":275,"note":"خدمات الشهر"},{"id":672,"date":"2026-03-12","type":"expense","amount":2040,"note":"شحن عداد الكهربا"},{"id":682,"date":"2026-03-12","type":"expense","amount":650,"note":"100 قلب جديد و 350 مفتايح و 200 اوكرة جديدة"},{"id":691,"date":"2026-03-12","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":701,"date":"2026-03-15","type":"income","amount":75,"note":"بيع 3 كارتة اسانسير"},{"id":711,"date":"2026-03-15","type":"income","amount":900,"note":"خدمات العقار"},{"id":722,"date":"2026-03-15","type":"expense","amount":50,"note":"5 مفاتيح للعقار"},{"id":731,"date":"2026-03-29","type":"income","amount":275,"note":"خدمات شهر 4"},{"id":742,"date":"2026-03-29","type":"expense","amount":20,"note":"شراء لمبة"},{"id":751,"date":"2026-03-29","type":"income","amount":250,"note":"خدمات شهر 2 و 3 و 4"},{"id":761,"date":"2026-03-29","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":771,"date":"2026-03-29","type":"income","amount":285,"note":"125 شهر 2 و 150 شهر 3 و مفتاح"},{"id":781,"date":"2026-03-30","type":"income","amount":450,"note":"خدمات شهر 3 و 4 و 5"},{"id":791,"date":"2026-04-01","type":"income","amount":750,"note":"خدمات شهر 4"},{"id":802,"date":"2026-04-01","type":"expense","amount":50,"note":"5 مفاتيح لباب العمارة"},{"id":811,"date":"2026-04-05","type":"income","amount":725,"note":"خدمات شهر 4"},{"id":821,"date":"2026-04-08","type":"income","amount":275,"note":"خدمات شهر 4"},{"id":832,"date":"2026-04-08","type":"expense","amount":2060,"note":"شحن كهربا الاسانسير"},{"id":841,"date":"2026-04-15","type":"income","amount":450,"note":"خدمات شهر 3 و 4"},{"id":851,"date":"2026-04-15","type":"income","amount":25,"note":"بيع كارتة اسانسير"},{"id":861,"date":"2026-04-20","type":"income","amount":450,"note":"خدمات العقار"},{"id":872,"date":"2026-04-20","type":"expense","amount":200,"note":"تنظيف الخزانات"},{"id":881,"date":"2026-04-23","type":"income","amount":150,"note":"الخدمات"},{"id":892,"date":"2026-04-23","type":"expense","amount":50,"note":"قفل و جنزبر"},{"id":901,"date":"2026-04-26","type":"income","amount":200,"note":"خدمات"},{"id":911,"date":"2026-04-27","type":"income","amount":100,"note":"بيع 4 كارتات"},{"id":921,"date":"2026-04-27","type":"income","amount":2720,"note":"خدمات + صيانة الماتور"},{"id":932,"date":"2026-04-27","type":"expense","amount":3300,"note":"صيانة الماتور"},{"id":942,"date":"2026-04-27","type":"expense","amount":3090,"note":"شحن كهريا الاسانسير"},{"id":951,"date":"2026-04-29","type":"income","amount":400,"note":"صيانة ماتور الخزان"},{"id":961,"date":"2026-04-29","type":"income","amount":510,"note":"خدمات شهر 5"},{"id":971,"date":"2026-04-29","type":"income","amount":200,"note":"صيانة ماتور الخزان"},{"id":981,"date":"2026-05-02","type":"income","amount":400,"note":"صيانة الماتور"},{"id":991,"date":"2026-05-02","type":"income","amount":460,"note":"الخدمات"},{"id":1002,"date":"2026-05-07","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 4"},{"id":1012,"date":"2026-05-07","type":"expense","amount":300,"note":"صيانة الاسانسير عن شهر 5"},{"id":1022,"date":"2026-05-07","type":"expense","amount":300,"note":"شراء كارتات اسانسير"},{"id":1031,"date":"2026-05-07","type":"income","amount":400,"note":"صيانة ماتور الخزان استاذ ابراهيم"},{"id":1041,"date":"2026-05-07","type":"income","amount":610,"note":"خدمات شهر 5"},{"id":1051,"date":"2026-05-07","type":"income","amount":50,"note":"بيع 2 كارتة اسانسير"},{"id":1062,"date":"2026-05-07","type":"expense","amount":300,"note":"فرق سعر صندوق القمامة"}];
 
-// State — 3 keys منفصلة في storage
-let T={},P={},TX=[],CM='2026-05',M={}; 
+// State
+let T={},P={},TX=[],CM='2026-05',M={},ARREARS={active:[],paid:[]};
 let SECTIONS=[
-  {id:'floors',title:'الأدوار',type:'floors',visible:true,icon:'🏠'},
+  {id:'floors',title:'الأدوار',type:'floors',visible:true,icon:'🏠',fee:125},
   {id:'txs',title:'العمليات',type:'txs',visible:true,icon:'🧾'},
+  {id:'arrears',title:'متأخرات',type:'arrears',visible:true,icon:'⏳'},
   {id:'settings',title:'الإعدادات',type:'settings',visible:true,icon:'⚙'}
 ];
+// SC[sectionId][residentName] = true  →  مغلق في هذا القسم فقط
+// SC[sectionId][residentName] = false →  مفتوح في هذا القسم (يُلغي الإغلاق الكوني)
+let SC={};
 let CSID='floors',lastFloorsSid='floors',openUnit=null,editKey=null,addToIncome=true,txPage=1,tenantPage=1;
+
+// Helper: is this tenant closed in the given section?
+function isClosedIn(name, sectionId) {
+  if (SC[sectionId] && SC[sectionId][name] !== undefined)
+    return SC[sectionId][name];
+  return !!(T[name] && T[name].closed);
+}
+
+// Helper: get the required payment amount for a resident in a section
+function getRequiredAmount(tenantName, sectionId) {
+  const t = T[tenantName];
+  if (!t) return 0;
+  if (t.fees && t.fees[sectionId] !== undefined && t.fees[sectionId] !== null && t.fees[sectionId] !== '') {
+    return parseFloat(t.fees[sectionId]) || 0;
+  }
+  const sec = SECTIONS.find(s => s.id === sectionId);
+  return sec && sec.fee !== undefined ? parseFloat(sec.fee) || 0 : 0;
+}
 
 const appStorage = {
   async get() {
@@ -324,7 +474,8 @@ const appStorage = {
 async function doSave(){
   setSt('جاري الحفظ...','');
   try{
-    const res = await appStorage.set({ tenants: T, payments: P, transactions: TX, currentMonth: CM, sections: SECTIONS, mapping: M });
+    const res = await appStorage.set({ tenants: T, payments: P, transactions: TX,
+      currentMonth: CM, sections: SECTIONS, mapping: M, sectionClosed: SC, arrears: ARREARS });
     setSt('✓ تم الحفظ','ok');
     updateConnStatus(res.source);
   }catch(e){setSt('خطأ في الحفظ','err');}
@@ -357,10 +508,41 @@ async function load(){
       TX = d.transactions || [];
       CM = d.currentMonth || CM;
       M = d.mapping || {};
+      ARREARS = d.arrears || { active: [], paid: [] };
       if (d.sections) {
         SECTIONS = d.sections.filter(s => s.id !== 'tenants');
       }
-      
+      SECTIONS.forEach(s => {
+        if (s.type === 'floors' && s.fee === undefined) {
+          s.fee = s.id === 'floors' ? 125 : 0;
+        }
+      });
+      if (!SECTIONS.some(s => s.id === 'arrears')) {
+        const settingsIndex = SECTIONS.findIndex(s => s.id === 'settings');
+        const newSec = {id:'arrears',title:'متأخرات',type:'arrears',visible:true,icon:'⏳'};
+        if (settingsIndex !== -1) {
+          SECTIONS.splice(settingsIndex, 0, newSec);
+        } else {
+          SECTIONS.push(newSec);
+        }
+      }
+
+      // Load SC — or run migration for old data
+      if (d.sectionClosed) {
+        SC = d.sectionClosed;
+      } else {
+        // Migration: copy T[name].closed=true into SC for every floors-type section
+        SC = {};
+        SECTIONS.filter(s => s.type === 'floors').forEach(sec => {
+          Object.values(T).forEach(tenant => {
+            if (tenant && tenant.name && tenant.closed) {
+              if (!SC[sec.id]) SC[sec.id] = {};
+              SC[sec.id][tenant.name] = true;
+            }
+          });
+        });
+      }
+
       // Robust migration: normalize T to name-keyed + ensure M consistency
       let migrated = false;
       const cleanT = {};
@@ -380,48 +562,50 @@ async function load(){
         const isLocKey = (parsed.f >= 0 && parsed.f < 13 && parsed.p >= 0 && parsed.p < 3 && parsed.sid);
 
         if (isLocKey) {
-          // Old format: key is a location — map it and store by name
           if (!cleanM[key] || cleanM[key] !== name) { cleanM[key] = name; migrated = true; }
           if (!cleanT[name]) {
             cleanT[name] = data;
             migrated = true;
           } else {
-            // Merge: prefer non-closed, prefer data with phone/notes
             const e = cleanT[name];
             if (data.phone && !e.phone) { e.phone = data.phone; migrated = true; }
             if (data.notes && !e.notes) { e.notes = data.notes; migrated = true; }
             if (!data.closed && e.closed) { e.closed = false; migrated = true; }
           }
         } else {
-          // New format: key is a tenant name
           if (!cleanT[key]) cleanT[key] = data;
         }
       });
 
-      // Pass 3: for each cloned section (not 'floors'), auto-copy M from floors
-      const floorSections = SECTIONS.filter(s => s.type === 'floors' && s.id !== 'floors');
-      floorSections.forEach(sec => {
-        Object.entries(cleanM).forEach(([loc, tName]) => {
-          const {sid, f, p} = parseUK(loc);
-          if (sid === 'floors' && !cleanM[uk(sec.id, f, p)]) {
-            cleanM[uk(sec.id, f, p)] = tName;
-            migrated = true;
-          }
-        });
-      });
-
       if (migrated) { T = cleanT; M = cleanM; }
+
+      // Single source of truth: strip any cloned-section mapping keys — only 'floors' keys survive
+      Object.keys(M).forEach(k => { if (parseUK(k).sid !== 'floors') delete M[k]; });
 
       updateConnStatus(res.source);
       setSt('✓ تم التحميل','ok');
     } else {
-      T = {}; // Fresh start or SEED if needed
+      T = {};
       TX = JSON.parse(JSON.stringify(SEED_TXS));
+      SC = {};
+      ARREARS = { active: [], paid: [] };
+      SECTIONS.forEach(s => {
+        if (s.type === 'floors' && s.fee === undefined) {
+          s.fee = s.id === 'floors' ? 125 : 0;
+        }
+      });
       updateConnStatus('local');
     }
   }catch(e){
     T={};
     TX=JSON.parse(JSON.stringify(SEED_TXS));
+    SC={};
+    ARREARS = { active: [], paid: [] };
+    SECTIONS.forEach(s => {
+      if (s.type === 'floors' && s.fee === undefined) {
+        s.fee = s.id === 'floors' ? 125 : 0;
+      }
+    });
     updateConnStatus('local');
   }
   document.getElementById('mpick').value=CM;
@@ -429,6 +613,7 @@ async function load(){
   document.getElementById('mpick').addEventListener('change',e=>{CM=e.target.value;refreshAll();});
   populateFSel();renderTabs();refreshAll();
   if(CSID==='settings'){renderEditList();renderSectionsList();}
+  if(CSID==='arrears'){renderArrears();}
 }
 
 // Utility to migrate data from local storage to Google Sheets
@@ -451,7 +636,7 @@ async function migrateLocalToGoogle() {
 }
 
 function doDrive(){
-  const data={tenants:T,payments:P,transactions:TX,currentMonth:CM,sections:SECTIONS};
+  const data={tenants:T,payments:P,transactions:TX,currentMonth:CM,sections:SECTIONS,sectionClosed:SC};
   const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='برج_الامل_'+CM+'.json';a.click();
 }
@@ -464,23 +649,26 @@ function sw(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   el.classList.add('on');
-  
+
   const targetId = sec.type==='floors' ? 'floors' : id;
   const targetEl = document.getElementById('sec-'+targetId);
   if(targetEl) targetEl.classList.add('on');
 
   closeMdl();
-  if(sec.type==='floors')renderFloors();
-  if(id==='tenants')renderTenants();
+  if(sec.type==='floors') renderFloors();
+  if(id==='tenants') renderTenants();
   if(id==='settings'){renderEditList();renderSectionsList();}
   if(id==='txs'){txPage=1;renderTxs();}
+  if(id==='arrears') renderArrears();
+  renderStats();
 }
 
 const gP=(f,p,sid=CSID)=>{const mK=mk(CM),u=uk(sid,f,p);if(!P[mK])P[mK]={};if(!P[mK][u])P[mK][u]=[];return P[mK][u];};
 const gTP=(f,p,sid=CSID)=>gP(f,p,sid).reduce((s,x)=>s+x.amount,0);
 const gTPInc=(f,p,sid=CSID)=>gP(f,p,sid).filter(x=>x.addedToIncome).reduce((s,x)=>s+x.amount,0);
+// Single source of truth: tenant lookup ALWAYS uses the 'floors' base mapping
 const gT=(f,p,sid=CSID)=>{
-  const loc = uk(sid,f,p);
+  const loc = uk('floors',f,p);
   const name = M[loc];
   return name ? T[name] : null;
 };
@@ -505,22 +693,46 @@ function renderStats(){
   document.getElementById('s-inc').textContent=fmt(totalInc)+' ج';
   document.getElementById('s-exp').textContent=fmt(txExp)+' ج';
   document.getElementById('s-bal').textContent=fmt(totalInc-txExp)+' ج';
+
   let paid=0,total=0;
-  const uniqueNames=[...new Set(Object.values(M))];
-  uniqueNames.forEach(name=>{
-    const t=T[name];
-    if(!t || t.closed) return;
-    total++;
-    let hasPaid = false;
-    Object.entries(M).forEach(([loc, tName]) => {
-      if (tName === name) {
-        const parts = parseUK(loc);
-        if (gTP(parts.f, parts.p, parts.sid) > 0) hasPaid = true;
-      }
+  const sec=SECTIONS.find(s=>s.id===CSID);
+
+  if (sec && sec.type==='floors') {
+    // Residents are shared (single source of truth via floors M)
+    // Payments are section-specific (use CSID)
+    const allNames=[...new Set(Object.values(M))].filter(name=>T[name]);
+    allNames.forEach(name=>{
+      if(isClosedIn(name,CSID)) return;
+      total++;
+      const floorLocs=Object.entries(M).filter(([,n])=>n===name);
+      const hasPaid=floorLocs.some(([loc])=>{
+        const {f,p}=parseUK(loc);
+        return gTP(f,p,CSID)>0;
+      });
+      if(hasPaid) paid++;
     });
-    if (hasPaid) paid++;
-  });
+  } else {
+    // Non-floor tabs: global count
+    const uniqueNames=[...new Set(Object.values(M))];
+    uniqueNames.forEach(name=>{
+      const t=T[name];if(!t||t.closed) return;
+      total++;
+      let hasPaid=false;
+      Object.entries(M).forEach(([loc,tName])=>{
+        if(tName===name){
+          const {f,p}=parseUK(loc);
+          if(gTP(f,p,'floors')>0) hasPaid=true;
+        }
+      });
+      if(hasPaid) paid++;
+    });
+  }
+
   document.getElementById('s-paid').textContent=paid+'/'+total;
+  const label=(sec && sec.type==='floors')
+    ? 'دفعوا — '+(sec.title||'الأدوار')
+    : 'دفعوا هذا الشهر';
+  document.getElementById('s-paid-label').textContent=label;
 }
 
 function renderFloors(){
@@ -539,14 +751,143 @@ function renderFloors(){
       if(!t||!t.name){const d=document.createElement('div');d.className='uc em';td.appendChild(d);tr.appendChild(td);continue;}
       const pa=gTP(f,p),paI=gTPInc(f,p);
       const d=document.createElement('div');const dot=document.createElement('div');
-      if(t.closed){d.className='uc cl';dot.className='dot x';}
-      else if(pa>0&&paI>0){d.className='uc paid';dot.className='dot g';}
-      else if(pa>0){d.className='uc paid-no';dot.className='dot y';}
-      else{d.className='uc';dot.className='dot r';}
-      const nm=document.createElement('span');nm.className='uc-name';nm.textContent=t.name;nm.title=t.name+(t.notes?' ('+t.notes+')':'');
-      d.appendChild(dot);d.appendChild(nm);
-      if(!t.closed&&pa>0){const b=document.createElement('span');b.className='uc-amt';b.style.color=paI>0?'#16a34a':'#d97706';b.textContent=fmt(pa)+' ج';d.appendChild(b);}
-      if(!t.closed)d.onclick=()=>openMdl(f,p,CSID);
+
+      // --- Determine closed state and its source ---
+      const globalClosed=!!(T[t.name]&&T[t.name].closed);
+      const hasOverride=SC[CSID]&&SC[CSID][t.name]!==undefined;
+      const overrideVal=hasOverride?SC[CSID][t.name]:null;
+      // closeSource: 'global' | 'section' | 'open-override' | null
+      let closeSource=null;
+      if(hasOverride&&overrideVal===true&&!globalClosed){closeSource='section';} // closed only here
+      else if(hasOverride&&overrideVal===false&&globalClosed){closeSource='open-override';} // globally closed, opened here
+      else if(globalClosed){closeSource='global';} // closed everywhere
+
+      const closed=(closeSource==='global'||closeSource==='section');
+      const _f=f,_p=p,_sid=CSID;
+
+      if(closed){
+        // --- CLOSED CELL ---
+        dot.className='dot x';
+        const nm=document.createElement('span');nm.className='uc-name';nm.textContent=t.name;
+        const lk=document.createElement('span');lk.textContent='🔒';lk.style.cssText='font-size:10px;flex-shrink:0';
+
+        if(closeSource==='section'){
+          // Amber: closed in this section only
+          d.className='uc cl-sec';
+          dot.className='dot o';
+          nm.title=t.name+' — مغلق في هذا القسم فقط'+(t.notes?' ('+t.notes+')':'');
+          
+          const noPay=document.createElement('span');
+          noPay.textContent='لا يدفع';
+          noPay.style.cssText='font-size:10px;color:#b45309;font-weight:600;flex-shrink:0;white-space:nowrap';
+
+          // Badge: "مغلق هنا"
+          const badge=document.createElement('span');
+          badge.textContent='مغلق هنا';
+          badge.style.cssText='font-size:9px;background:#d97706;color:#fff;border-radius:3px;padding:1px 4px;flex-shrink:0;white-space:nowrap';
+          d.appendChild(dot);d.appendChild(nm);d.appendChild(noPay);d.appendChild(badge);d.appendChild(lk);
+        } else {
+          // Grey: globally closed
+          d.className='uc cl';
+          nm.title=t.name+' — مغلق كونياً'+(t.notes?' ('+t.notes+')':'');
+
+          const noPay=document.createElement('span');
+          noPay.textContent='لا يدفع';
+          noPay.style.cssText='font-size:10px;color:#78716c;font-weight:600;flex-shrink:0;white-space:nowrap';
+
+          // Badge: "مغلق"
+          const badge=document.createElement('span');
+          badge.textContent='مغلق';
+          badge.style.cssText='font-size:9px;background:#78716c;color:#fff;border-radius:3px;padding:1px 4px;flex-shrink:0;white-space:nowrap';
+
+          d.appendChild(dot);d.appendChild(nm);d.appendChild(noPay);d.appendChild(badge);d.appendChild(lk);
+        }
+        d.onclick=(e)=>openClMenu(_f,_p,_sid,e,true);
+
+      } else {
+        // --- OPEN CELL (normal open OR open-override) ---
+        const req = getRequiredAmount(t.name, CSID);
+        let status = 'not-paid'; // 'paid' | 'part-paid' | 'not-paid'
+        
+        if (req === 0) {
+          status = pa > 0 ? 'paid' : 'not-paid';
+        } else {
+          if (pa >= req) status = 'paid';
+          else if (pa > 0) status = 'part-paid';
+          else status = 'not-paid';
+        }
+        
+        // Apply class and dot based on status
+        if (status === 'paid') {
+          d.className = 'uc paid';
+          dot.className = 'dot g';
+        } else if (status === 'part-paid') {
+          d.className = 'uc part-paid';
+          dot.className = 'dot y';
+        } else {
+          d.className = 'uc not-paid';
+          dot.className = 'dot r';
+        }
+        
+        const nm=document.createElement('span');
+        nm.className='uc-name';
+        nm.textContent=t.name;
+        nm.title=t.name + (closeSource==='open-override' ? ' — مفتوح هنا فقط (مغلق كونياً)' : '') + (t.notes?' ('+t.notes+')':'');
+        d.appendChild(dot);
+        d.appendChild(nm);
+        
+        // Add open-override badge if applicable
+        if (closeSource==='open-override') {
+          const badge=document.createElement('span');
+          badge.textContent='مفتوح هنا';
+          badge.style.cssText='font-size:9px;background:#10b981;color:#fff;border-radius:3px;padding:1px 4px;flex-shrink:0;white-space:nowrap';
+          d.appendChild(badge);
+        }
+        
+        // Render paid/remaining amounts
+        if (status === 'paid') {
+          const b=document.createElement('span');
+          b.className='uc-amt';
+          b.style.color='#16a34a';
+          b.textContent=fmt(pa)+' ج';
+          d.appendChild(b);
+        } else if (status === 'part-paid') {
+          // Display paid amount and remaining amount vertically in a neat container
+          const amtContainer = document.createElement('div');
+          amtContainer.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;flex-shrink:0';
+          
+          const paidLabel = document.createElement('span');
+          paidLabel.className = 'uc-amt';
+          paidLabel.style.color = '#d97706';
+          paidLabel.textContent = fmt(pa) + ' ج';
+          
+          const remLabel = document.createElement('span');
+          remLabel.style.cssText = 'font-size:9px;color:#b45309;font-weight:600;white-space:nowrap';
+          remLabel.textContent = 'متبقي ' + fmt(req - pa) + ' ج';
+          
+          amtContainer.appendChild(paidLabel);
+          amtContainer.appendChild(remLabel);
+          d.appendChild(amtContainer);
+        } else {
+          // Unpaid
+          const notPaid=document.createElement('span');
+          notPaid.style.cssText='font-size:10px;color:#dc2626;font-weight:600;flex-shrink:0;white-space:nowrap';
+          notPaid.textContent = 'لم يدفع بعد';
+          d.appendChild(notPaid);
+        }
+        
+        // Add lock button
+        const lkBtn=document.createElement('button');
+        lkBtn.textContent='🔓';
+        lkBtn.title='إغلاق في هذا القسم';
+        lkBtn.style.cssText='background:none;border:none;cursor:pointer;font-size:11px;flex-shrink:0;padding:0 2px;opacity:.4;line-height:1;transition:opacity .1s';
+        lkBtn.onmouseenter=()=>lkBtn.style.opacity='1';
+        lkBtn.onmouseleave=()=>lkBtn.style.opacity='.4';
+        lkBtn.onclick=(e)=>{e.stopPropagation();openClMenu(_f,_p,_sid,e,false);};
+        d.appendChild(lkBtn);
+        
+        d.onclick=()=>openMdl(f,p,CSID);
+      }
       td.appendChild(d);tr.appendChild(td);
     }
     tb.appendChild(tr);
@@ -569,6 +910,29 @@ function updPreview(){
     ?'<span style="color:#16a34a;font-weight:500">سيُضاف +'+fmt(amt)+' ج للإيرادات والرصيد</span>'
     :'<span style="color:#d97706;font-weight:500">تسجيل فقط — بدون تغيير الرصيد</span>';
 }
+function updReqAmount() {
+  if(!openUnit)return;
+  const {f,p,sid}=openUnit;
+  const t=gT(f,p,sid);if(!t)return;
+  const valStr = document.getElementById('m-req').value.trim();
+  if (valStr === '') {
+    if (t.fees) delete t.fees[sid];
+  } else {
+    if (!t.fees) t.fees = {};
+    t.fees[sid] = parseFloat(valStr) || 0;
+  }
+  const req = getRequiredAmount(t.name, sid);
+  const paidAmt = gTP(f,p,sid);
+  const rem = Math.max(0, req - paidAmt);
+  document.getElementById('m-rem').textContent=fmt(rem)+' ج';
+}
+function saveReqAmount() {
+  if(!openUnit)return;
+  syncAllArrearsFromSheet();
+  renderFloors();
+  renderStats();
+  autoSave();
+}
 function openMdl(f,p,sid=CSID){
   openUnit={f,p,sid};addToIncome=true;
   document.getElementById('opt-yes').className='toggle-opt sel-yes';
@@ -582,7 +946,14 @@ function openMdl(f,p,sid=CSID){
   document.getElementById('m-loc').textContent=(sec?sec.title:'')+' — '+FN[f]+' — '+PN[p]+(t.notes?' · '+t.notes:'');
   document.getElementById('m-ph').innerHTML=t.phone?'📞 '+t.phone:'';
   document.getElementById('m-month').textContent=CM;
-  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  
+  const req = getRequiredAmount(t.name, sid);
+  const paidAmt = gTP(f,p,sid);
+  const rem = Math.max(0, req - paidAmt);
+  document.getElementById('m-req').value=req;
+  document.getElementById('m-ptot').textContent=fmt(paidAmt)+' ج';
+  document.getElementById('m-rem').textContent=fmt(rem)+' ج';
+  
   document.getElementById('m-amt').value='';document.getElementById('m-note').value='';
   document.getElementById('m-preview').textContent='';
   renderHist(f,p,sid);
@@ -609,7 +980,19 @@ function recPay(){
   }
   document.getElementById('m-amt').value='';document.getElementById('m-note').value='';
   document.getElementById('m-preview').textContent='';
-  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  
+  if (t) {
+    const req = getRequiredAmount(t.name, sid);
+    const paidAmt = gTP(f,p,sid);
+    const rem = Math.max(0, req - paidAmt);
+    document.getElementById('m-req').value=req;
+    document.getElementById('m-ptot').textContent=fmt(paidAmt)+' ج';
+    document.getElementById('m-rem').textContent=fmt(rem)+' ج';
+  } else {
+    document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  }
+  
+  syncAllArrearsFromSheet();
   renderHist(f,p,sid);renderStats();renderFloors();autoSave();
 }
 function renderHist(f,p,sid=CSID){
@@ -630,37 +1013,114 @@ function delPay(f,p,i,sid=CSID){
     if(px&&px.txId)TX=TX.filter(t=>t.id!==px.txId);
     P[mK][u].splice(i,1);
   }
-  document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  const t=gT(f,p,sid);
+  if (t) {
+    const req = getRequiredAmount(t.name, sid);
+    const paidAmt = gTP(f,p,sid);
+    const rem = Math.max(0, req - paidAmt);
+    document.getElementById('m-req').value=req;
+    document.getElementById('m-ptot').textContent=fmt(paidAmt)+' ج';
+    document.getElementById('m-rem').textContent=fmt(rem)+' ج';
+  } else {
+    document.getElementById('m-ptot').textContent=fmt(gTP(f,p,sid))+' ج';
+  }
+  syncAllArrearsFromSheet();
   renderHist(f,p,sid);renderStats();renderFloors();autoSave();
 }
 function closeMdl(){document.getElementById('popup-bg').classList.remove('open');openUnit=null;}
 
+// Closed/open-cell mini menu — works for both states
+let clMenuCtx=null;
+function openClMenu(f,p,sid,e,isClosed=true){
+  e.stopPropagation();
+  const t=gT(f,p,sid);if(!t)return;
+  clMenuCtx={f,p,sid,name:t.name,isClosed};
+  const sec=SECTIONS.find(s=>s.id===sid);
+  const secTitle=sec?(sec.icon||'')+' '+sec.title:sid;
+  const hasOverride=SC[sid]&&SC[sid][t.name]!==undefined;
+  const globalClosed=!!(T[t.name]&&T[t.name].closed);
+
+  const primaryBtn=document.getElementById('cl-menu-btn-primary');
+  const resetBtn=document.getElementById('cl-menu-btn-reset');
+
+  if(isClosed){
+    // Resident is CLOSED — offer to open
+    document.getElementById('cl-menu-name').textContent='🔒 '+t.name;
+    document.getElementById('cl-menu-sub').textContent=
+      hasOverride?'مغلق بتجاوز للقسم: '+secTitle:'مغلق بالإعداد الكوني · '+secTitle;
+    primaryBtn.textContent='✅ فتح في هذا القسم فقط';
+    primaryBtn.className='cl-menu-btn g';
+    // Show reset only if there's a per-section override or if global is not closed (shouldn't happen but safe)
+    resetBtn.style.display=(hasOverride||!globalClosed)?'flex':'none';
+  } else {
+    // Resident is OPEN — offer to close
+    document.getElementById('cl-menu-name').textContent='🔓 '+t.name;
+    document.getElementById('cl-menu-sub').textContent=
+      hasOverride&&SC[sid][t.name]===false?'مفتوح بتجاوز للقسم: '+secTitle:'مفتوح بالإعداد الكوني · '+secTitle;
+    primaryBtn.textContent='🔒 إغلاق في هذا القسم فقط';
+    primaryBtn.className='cl-menu-btn r';
+    // Show reset only if there's an override that made it open (overriding a global-closed)
+    resetBtn.style.display=hasOverride?'flex':'none';
+  }
+
+  // Position near click
+  const menu=document.getElementById('cl-menu');
+  menu.style.display='block';
+  const mw=245,mh=180;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  menu.style.left=Math.min(e.clientX,vw-mw-10)+'px';
+  menu.style.top=Math.min(e.clientY,vh-mh-10)+'px';
+  document.getElementById('cl-menu-bg').classList.add('open');
+}
+function closeClMenu(){
+  document.getElementById('cl-menu-bg').classList.remove('open');
+  document.getElementById('cl-menu').style.display='none';
+  clMenuCtx=null;
+}
+function clMenuAction(action){
+  if(!clMenuCtx)return;
+  const{name,sid,isClosed}=clMenuCtx;
+  if(!SC[sid]) SC[sid]={};
+  if(action==='primary'){
+    if(isClosed){
+      SC[sid][name]=false; // override: open in this section
+    } else {
+      SC[sid][name]=true;  // override: close in this section
+    }
+  } else if(action==='reset'){
+    delete SC[sid][name]; // remove override → inherit global
+  }
+  closeClMenu();
+  autoSave();
+  renderFloors();
+  renderStats();
+}
+
 function renderTenants(){
   const el=document.getElementById('tenants-list');
-  const uniqueNames = [...new Set(Object.values(M))].filter(name => T[name] && T[name].name);
-  const entries = uniqueNames.map(name => {
-    const firstLoc = Object.keys(M).find(k => M[k] === name) || '';
-    const info = firstLoc ? parseUK(firstLoc) : {sid:'',f:0,p:0};
-    return [name, T[name], info];
+  const uniqueNames=[...new Set(Object.values(M))].filter(name=>T[name]&&T[name].name);
+  const entries=uniqueNames.map(name=>{
+    const firstLoc=Object.keys(M).find(k=>M[k]===name)||'';
+    const info=firstLoc?parseUK(firstLoc):{sid:'',f:0,p:0};
+    return [name,T[name],info];
   }).sort((a,b)=>a[2].sid.localeCompare(b[2].sid)||a[2].f-b[2].f||a[2].p-b[2].p);
   if(!entries.length){el.innerHTML='<div style="color:#aaa;font-size:13px;text-align:center;padding:1rem">لا يوجد سكان</div>';return;}
   el.innerHTML=entries.map(([name,t,info])=>{
-    // Sum payments across ALL locations for this resident
-    let totalPaid = 0;
-    Object.entries(M).forEach(([loc, tName]) => {
-      if (tName === name) {
-        const {sid, f, p} = parseUK(loc);
-        totalPaid += gTP(f, p, sid);
+    let totalPaid=0;
+    Object.entries(M).forEach(([loc,tName])=>{
+      if(tName===name){
+        const {sid,f,p}=parseUK(loc);
+        totalPaid+=gTP(f,p,sid);
       }
     });
-    const sections = [...new Set(
+    const sections=[...new Set(
       Object.entries(M).filter(([,n])=>n===name).map(([loc])=>{
         const {sid,f,p}=parseUK(loc);
         const sec=SECTIONS.find(s=>s.id===sid);
         return (sec?sec.title:sid)+' — '+FN[f]+' — '+PN[p];
       })
     )];
-    const locInfo = sections.join(' · ');
+    const locInfo=sections.join(' · ');
     return `<div class="ti" style="${t.closed?'opacity:.45':''}">
       <div class="av" style="width:34px;height:34px;font-size:11px">${(t.name||'؟').split(' ').slice(0,2).map(w=>w[0]).join('')}</div>
       <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}${t.closed?' (مغلق)':''}</div><div style="font-size:11px;color:#888">${locInfo}${t.notes&&!t.closed?' · '+t.notes:''}</div></div>
@@ -736,6 +1196,11 @@ function renderSectionsList(){
   const el=document.getElementById('sections-list');
   el.innerHTML=SECTIONS.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0">
     <span style="flex:1;font-size:13px">${s.title} <span style="color:#aaa;font-size:11px">(${s.id})</span></span>
+    ${s.type==='floors'?`<div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#555;margin-left:8px">
+      <span>المبلغ:</span>
+      <input type="number" value="${s.fee!==undefined?s.fee:''}" placeholder="125" style="width:70px;padding:2px 4px;font-size:12px;border:1px solid #ccc;border-radius:4px" onchange="updateSectionFee(${i},this.value)">
+      <span>ج</span>
+    </div>`:''}
     <label style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" ${s.visible?'checked':''} onchange="toggleSection(${i},this.checked)"> ظاهر</label>
     ${s.id!=='floors'&&s.id!=='tenants'&&s.id!=='txs'&&s.id!=='settings'?`<button onclick="delSection(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1">×</button>`:''}
   </div>`).join('');
@@ -743,72 +1208,107 @@ function renderSectionsList(){
 
 function addSection(){
   const name=document.getElementById('new-sec-name').value.trim();
-  if(!name){alert('Please enter a name for the new section');return;}
+  if(!name){alert('أدخل اسم القسم الجديد');return;}
+  const feeInput=document.getElementById('new-sec-fee');
+  const fee=feeInput ? (parseFloat(feeInput.value) || 0) : 0;
   const id='sec_'+Date.now();
-
-  SECTIONS.splice(1,0,{id,title:name,type:'floors',visible:true,icon:'🏠'});
-
-  // Auto-copy resident mappings from الأدار to the new section
-  Object.entries(M).forEach(([loc, tName]) => {
-    const {sid, f, p} = parseUK(loc);
-    if (sid === 'floors') { M[uk(id, f, p)] = tName; }
-  });
-
+  // Single source of truth: no M copying needed — all sections read from floors M via gT()
+  SECTIONS.splice(1,0,{id,title:name,type:'floors',visible:true,icon:'🏠',fee});
   document.getElementById('new-sec-name').value='';
-  renderTabs();renderSectionsList();populateSectionSel();autoSave();
+  if(feeInput) feeInput.value='';
+  renderTabs();renderSectionsList();autoSave();
 }
 function toggleSection(i,v){
   SECTIONS[i].visible=v;
   renderTabs();autoSave();
 }
 
+function updateSectionFee(i,val){
+  const fee=parseFloat(val) || 0;
+  SECTIONS[i].fee=fee;
+  autoSave();refreshAll();
+}
+
 function delSection(i){
   if(!confirm('هل أنت متأكد من حذف هذا القسم؟ سيتم حذف بيانات المدفوعات المرتبطة به فقط (السكان مشتركون).'))return;
   const sid=SECTIONS[i].id;
   // Remove M mappings for this section only (tenants are shared)
-  Object.keys(M).forEach(k => { const {sid: kSid} = parseUK(k); if (kSid === sid) delete M[k]; });
+  Object.keys(M).forEach(k=>{const {sid:kSid}=parseUK(k);if(kSid===sid)delete M[k];});
   // Delete payments for this section
   Object.keys(P).forEach(mK=>{if(P[mK]){Object.keys(P[mK]).forEach(u=>{if(u.startsWith(sid+'_'))delete P[mK][u];});}});
+  // Remove SC entries for this section
+  delete SC[sid];
   SECTIONS.splice(i,1);
   if(CSID===sid)CSID='floors';
-  renderTabs();renderSectionsList();populateSectionSel();refreshAll();autoSave();
+  renderTabs();renderSectionsList();refreshAll();autoSave();
 }
 
 function populateFSel(){
   document.getElementById('at-f').innerHTML=FN.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
-  populateSectionSel();
 }
-function populateSectionSel(){
-  const sel=document.getElementById('at-s');
-  if(!sel)return;
-  const floorSections=SECTIONS.filter(s=>s.type==='floors');
-  sel.innerHTML=floorSections.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
+// populateSectionSel removed — single source of truth: residents always saved to 'floors' base mapping
+
+// (Per-section closed is now managed via the floor grid mini-menu — openClMenu/clMenuAction)
+
+function renderTenantFeesInputs(name) {
+  const container = document.getElementById('at-fees-inputs');
+  if(!container) return;
+  const floorSecs = SECTIONS.filter(s => s.type === 'floors');
+  const t = T[name] || {};
+  const fees = t.fees || {};
+  
+  container.innerHTML = floorSecs.map(sec => {
+    const customFee = fees[sec.id] !== undefined ? fees[sec.id] : '';
+    const defFee = sec.fee !== undefined ? sec.fee : 0;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;padding:2px 0">
+        <span>${sec.icon || ''} ${sec.title}:</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" class="tenant-fee-input" data-sec-id="${sec.id}" value="${customFee}" placeholder="الافتراضي: ${defFee} ج" style="width:120px;padding:4px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px" min="0">
+          <span>ج</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
+
 function saveTenant(){
   const name=document.getElementById('at-n').value.trim();if(!name){alert('أدخل الاسم');return;}
   const f=parseInt(document.getElementById('at-f').value),p=parseInt(document.getElementById('at-pos').value);
-  const sid=document.getElementById('at-s').value;
-  const loc=uk(sid,f,p);
-  const cl=document.getElementById('at-cl').checked;
-  
-  // If editing and name changed, migrate mapping
-  if (editKey && editKey !== name) {
-    Object.keys(M).forEach(k => { if(M[k] === editKey) M[k] = name; });
+  // Single source of truth: always save to the 'floors' base mapping
+  const loc=uk('floors',f,p);
+  const cl=document.getElementById('at-cl-global').checked;
+
+  // If editing and name changed, migrate mapping + SC keys
+  if(editKey && editKey!==name){
+    Object.keys(M).forEach(k=>{if(M[k]===editKey)M[k]=name;});
     delete T[editKey];
+    Object.keys(SC).forEach(secId=>{
+      if(SC[secId] && SC[secId][editKey]!==undefined){
+        SC[secId][name]=SC[secId][editKey];
+        delete SC[secId][editKey];
+      }
+    });
   }
 
-  T[name] = {
-    name,
-    phone: document.getElementById('at-p').value.trim(),
-    notes: document.getElementById('at-nt').value.trim(),
-    closed: cl
-  };
-  M[loc] = name;
-  
+  // Read fees per section from inputs
+  const fees = {};
+  document.querySelectorAll('.tenant-fee-input').forEach(input => {
+    const secId = input.getAttribute('data-sec-id');
+    const val = input.value.trim();
+    if (val !== '') {
+      fees[secId] = parseFloat(val) || 0;
+    }
+  });
+
+  T[name]={name,phone:document.getElementById('at-p').value.trim(),notes:document.getElementById('at-nt').value.trim(),closed:cl,fees};
+  M[loc]=name;
+
   closeEditMdl();renderEditList();refreshAll();autoSave();
 }
 function openAddTenant(){
   cancelEdit();
+  renderTenantFeesInputs('');
   document.getElementById('edit-popup-bg').classList.add('open');
 }
 function editTenant(name){
@@ -816,22 +1316,23 @@ function editTenant(name){
   editKey=name;
   document.getElementById('at-n').value=t.name||'';document.getElementById('at-p').value=t.phone||'';
   document.getElementById('at-nt').value=t.notes||'';
-  document.getElementById('at-cl').checked=!!t.closed;
-  
-  const loc = Object.keys(M).find(k => M[k] === name);
-  if (loc) {
-    const info = parseUK(loc);
-    document.getElementById('at-s').value=info.sid;
+  document.getElementById('at-cl-global').checked=!!t.closed;
+
+  const loc=Object.keys(M).find(k=>M[k]===name);
+  if(loc){
+    const info=parseUK(loc);
     document.getElementById('at-f').value=info.f;
     document.getElementById('at-pos').value=info.p;
   }
+  
+  renderTenantFeesInputs(name);
 
   document.getElementById('at-title').textContent='تعديل بيانات الساكن';
   document.getElementById('edit-popup-bg').classList.add('open');
 }
 function cancelEdit(){
   editKey=null;['at-n','at-p','at-nt'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('at-cl').checked=false;
+  document.getElementById('at-cl-global').checked=false;
   document.getElementById('at-title').textContent='+ إضافة / تعديل ساكن';
 }
 function closeEditMdl(){
@@ -841,51 +1342,339 @@ function closeEditMdl(){
 function delTenant(name){
   if(!confirm('حذف '+name+'؟ سيتم حذفه من جميع الأقسام.'))return;
   delete T[name];
-  Object.keys(M).forEach(k => { if(M[k] === name) delete M[k]; });
+  Object.keys(M).forEach(k=>{if(M[k]===name)delete M[k];});
+  // Remove SC entries for this tenant across all sections
+  Object.keys(SC).forEach(secId=>{if(SC[secId])delete SC[secId][name];});
   renderEditList();refreshAll();autoSave();
 }
 function renderEditList(){
   const el=document.getElementById('edit-list');
-  // Show unique residents by name
-  const uniqueNames = [...new Set(Object.values(M))].filter(name => T[name] && T[name].name);
-  const sorted = uniqueNames.map(name => {
-    const firstLoc = Object.keys(M).find(k => M[k] === name) || '';
-    const info = firstLoc ? parseUK(firstLoc) : {sid:'',f:0,p:0};
-    return [name, T[name], info];
+  const uniqueNames=[...new Set(Object.values(M))].filter(name=>T[name]&&T[name].name);
+  const sorted=uniqueNames.map(name=>{
+    const firstLoc=Object.keys(M).find(k=>M[k]===name)||'';
+    const info=firstLoc?parseUK(firstLoc):{sid:'',f:0,p:0};
+    return [name,T[name],info];
   }).sort((a,b)=>a[2].sid.localeCompare(b[2].sid)||a[2].f-b[2].f||a[2].p-b[2].p);
   if(!sorted.length){el.innerHTML='<div style="color:#aaa;font-size:13px">لا يوجد سكان</div>';document.getElementById('edit-pgn').innerHTML='';return;}
 
-  const T_PER = 10;
-  const total=sorted.length, pages=Math.max(1, Math.ceil(total/T_PER));
+  const T_PER=10;
+  const total=sorted.length,pages=Math.max(1,Math.ceil(total/T_PER));
   if(tenantPage>pages) tenantPage=pages;
-  const start=(tenantPage-1)*T_PER, slice=sorted.slice(start, start+T_PER);
+  const start=(tenantPage-1)*T_PER,slice=sorted.slice(start,start+T_PER);
 
   el.innerHTML=slice.map(([name,t,info])=>{
-    const sections = [...new Set(
+    const sections=[...new Set(
       Object.entries(M).filter(([,n])=>n===name).map(([loc])=>{
         const {sid,f,p}=parseUK(loc);
         const sec=SECTIONS.find(s=>s.id===sid);
         return (sec?sec.title:sid)+' — '+FN[f]+' — '+PN[p];
       })
     )];
-    const locInfo = sections.join(' · ');
+    const locInfo=sections.join(' · ');
     return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0">
-      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name} ${t.phone ? `<span style="color:#2563eb;font-size:12px;margin-right:5px">📞 ${t.phone}</span>` : ''} <span style="color:#aaa;font-size:11px">${locInfo}</span></span>
-      <button class="btn sm" onclick="editTenant('${name}')">✏ تعديل</button>
-      <button onclick="delTenant('${name}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1">×</button>
+      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name} ${t.phone?`<span style="color:#2563eb;font-size:12px;margin-right:5px">📞 ${t.phone}</span>`:''} <span style="color:#aaa;font-size:11px">${locInfo}</span></span>
+      <button class="btn sm" onclick="editTenant('${name.replace(/'/g,"\\'")}')">✏ تعديل</button>
+      <button onclick="delTenant('${name.replace(/'/g,"\\'")}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1">×</button>
     </div>`;
   }).join('');
   const pgn=document.getElementById('edit-pgn');
   if(pages<=1){pgn.innerHTML='';return;}
   let html=`<button class="pgn-btn" onclick="goTenantPage(${tenantPage-1})" ${tenantPage===1?'disabled':''}>‹ السابق</button>`;
-  let s=Math.max(1,tenantPage-2), e=Math.min(pages, s+4); s=Math.max(1, e-4);
-  if(s>1) html+=`<button class="pgn-btn" onclick="goTenantPage(1)">1</button>${s>2?'<span class="pgn-info">…</span>':''}`;
-  for(let i=s;i<=e;i++) html+=`<button class="pgn-btn${i===tenantPage?' on':''}" onclick="goTenantPage(${i})">${i}</button>`;
-  if(e<pages) html+=`${e<pages-1?'<span class="pgn-info">…</span>':''}<button class="pgn-btn" onclick="goTenantPage(${pages})">${pages}</button>`;
+  let s=Math.max(1,tenantPage-2),e=Math.min(pages,s+4);s=Math.max(1,e-4);
+  if(s>1)html+=`<button class="pgn-btn" onclick="goTenantPage(1)">1</button>${s>2?'<span class="pgn-info">…</span>':''}`;
+  for(let i=s;i<=e;i++)html+=`<button class="pgn-btn${i===tenantPage?' on':''}" onclick="goTenantPage(${i})">${i}</button>`;
+  if(e<pages)html+=`${e<pages-1?'<span class="pgn-info">…</span>':''}<button class="pgn-btn" onclick="goTenantPage(${pages})">${pages}</button>`;
   html+=`<button class="pgn-btn" onclick="goTenantPage(${tenantPage+1})" ${tenantPage===pages?'disabled':''}>التالي ›</button>`;
   html+=`<span class="pgn-info">${start+1}–${Math.min(start+T_PER,total)} من ${total}</span>`;
   pgn.innerHTML=html;
 }
 function goTenantPage(p){tenantPage=p;renderEditList();}
+
+function getTenantLocationInfo(name) {
+  const loc = Object.keys(M).find(k => M[k] === name);
+  if (!loc) return '';
+  const info = parseUK(loc);
+  return `(الدور ${FN[info.f]} — ${PN[info.p]})`;
+}
+
+function syncAllArrearsFromSheet() {
+  if (!ARREARS.active) ARREARS.active = [];
+  if (!ARREARS.paid) ARREARS.paid = [];
+
+  const floorSecs = SECTIONS.filter(s => s.type === 'floors');
+  
+  floorSecs.forEach(sec => {
+    for (let f = 0; f < 13; f++) {
+      for (const p of COL) {
+        const t = gT(f, p, sec.id);
+        if (!t || !t.name) continue;
+        if (isClosedIn(t.name, sec.id)) continue;
+        
+        const req = getRequiredAmount(t.name, sec.id);
+        const pa = gTP(f, p, sec.id);
+        const rem = Math.max(0, req - pa);
+        
+        // Find if there is an active arrear linked to this cell
+        const activeIdx = ARREARS.active.findIndex(a => a.month === CM && a.sid === sec.id && a.f === f && a.p === p);
+        
+        if (rem > 0) {
+          if (activeIdx !== -1) {
+            ARREARS.active[activeIdx].amount = rem;
+          } else {
+            ARREARS.active.push({
+              id: Date.now() + Math.floor(Math.random() * 1000),
+              tenant: t.name,
+              amount: rem,
+              date: todayStr(),
+              notes: `متبقي ${sec.title} - شهر ${CM}`,
+              autoTx: true,
+              month: CM,
+              sid: sec.id,
+              f: f,
+              p: p
+            });
+          }
+        } else {
+          // rem === 0
+          if (activeIdx !== -1) {
+            const arrear = ARREARS.active[activeIdx];
+            const alreadyPaid = ARREARS.paid.some(x => x.month === CM && x.sid === sec.id && x.f === f && x.p === p);
+            if (!alreadyPaid) {
+              ARREARS.paid.unshift({
+                ...arrear,
+                datePaid: todayStr()
+              });
+            }
+            ARREARS.active.splice(activeIdx, 1);
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderArrears() {
+  syncAllArrearsFromSheet();
+  const uniqueNames = [...new Set(Object.values(M))].filter(name => T[name] && T[name].name);
+  const sortedTenants = uniqueNames.map(name => {
+    const firstLoc = Object.keys(M).find(k => M[k] === name) || '';
+    const info = firstLoc ? parseUK(firstLoc) : { sid: '', f: 0, p: 0 };
+    return { name, info };
+  }).sort((a, b) => a.info.f - b.info.f || a.info.p - b.info.p);
+
+  const sel = document.getElementById('arr-tenant');
+  if (sel) {
+    sel.innerHTML = `<option value="">-- اختر الساكن --</option>` + sortedTenants.map(t => 
+      `<option value="${t.name.replace(/"/g, '&quot;')}">${t.name} ${getTenantLocationInfo(t.name)}</option>`
+    ).join('');
+  }
+
+  const dInput = document.getElementById('arr-date');
+  if (dInput && !dInput.value) {
+    dInput.value = todayStr();
+  }
+
+  // Populate sheet filter select dynamically if it exists
+  const sheetFilterSelect = document.getElementById('arr-filter-sheet');
+  if (sheetFilterSelect) {
+    const prevVal = sheetFilterSelect.value || 'all';
+    const floorSecs = SECTIONS.filter(s => s.type === 'floors');
+    let optionsHtml = `<option value="all">كل الأقسام</option>`;
+    optionsHtml += floorSecs.map(s => `<option value="${s.id}">${s.icon || ''} ${s.title}</option>`).join('');
+    optionsHtml += `<option value="manual">✍ متأخرات يدوية</option>`;
+    sheetFilterSelect.innerHTML = optionsHtml;
+    if ([...sheetFilterSelect.options].some(o => o.value === prevVal)) {
+      sheetFilterSelect.value = prevVal;
+    } else {
+      sheetFilterSelect.value = 'all';
+    }
+  }
+
+  let activeList = ARREARS.active || [];
+  let paidList = ARREARS.paid || [];
+
+  const sheetFilter = sheetFilterSelect ? sheetFilterSelect.value : 'all';
+  const dateFilterVal = document.getElementById('arr-filter-date') ? document.getElementById('arr-filter-date').value : '';
+
+  // Apply filters
+  if (sheetFilter !== 'all') {
+    if (sheetFilter === 'manual') {
+      activeList = activeList.filter(a => !a.sid);
+      paidList = paidList.filter(a => !a.sid);
+    } else {
+      activeList = activeList.filter(a => a.sid === sheetFilter);
+      paidList = paidList.filter(a => a.sid === sheetFilter);
+    }
+  }
+
+  if (dateFilterVal) {
+    activeList = activeList.filter(a => a.month === dateFilterVal || (a.date && a.date.startsWith(dateFilterVal)));
+    paidList = paidList.filter(a => a.month === dateFilterVal || (a.date && a.date.startsWith(dateFilterVal)));
+  }
+
+  const activeTbody = document.getElementById('arr-active-tbody');
+  if (activeTbody) {
+    if (!activeList.length) {
+      activeTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:15px">لا توجد متأخرات حالية</td></tr>`;
+    } else {
+      activeTbody.innerHTML = activeList.map(a => `<tr>
+        <td style="text-align:center;font-weight:600">${a.tenant}</td>
+        <td style="text-align:center;color:#dc2626;font-weight:700">${fmt(a.amount)} ج</td>
+        <td style="text-align:center">${a.date}</td>
+        <td style="text-align:center;color:#666">${a.notes || '—'}</td>
+        <td style="text-align:center">
+          <button class="btn sm g" onclick="markArrearAsPaid(${a.id})">✅ دفعت</button>
+        </td>
+        <td style="text-align:center">
+          <button onclick="delArrear(${a.id}, 'active')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
+        </td>
+      </tr>`).join('');
+    }
+  }
+  const activeCountEl = document.getElementById('active-arr-count');
+  if (activeCountEl) {
+    activeCountEl.textContent = activeList.length + ' عملية';
+  }
+
+  const paidTbody = document.getElementById('arr-paid-tbody');
+  if (paidTbody) {
+    if (!paidList.length) {
+      paidTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:15px">سجل المدفوعات فارغ</td></tr>`;
+    } else {
+      paidTbody.innerHTML = paidList.map(a => `<tr>
+        <td style="text-align:center;font-weight:600">${a.tenant}</td>
+        <td style="text-align:center;color:#16a34a;font-weight:700">${fmt(a.amount)} ج</td>
+        <td style="text-align:center">${a.date}</td>
+        <td style="text-align:center;color:#16a34a">${a.datePaid || '—'}</td>
+        <td style="text-align:center;color:#666">${a.notes || '—'}</td>
+        <td style="text-align:center">
+          <button onclick="delArrear(${a.id}, 'paid')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
+        </td>
+      </tr>`).join('');
+    }
+  }
+  const paidCountEl = document.getElementById('paid-arr-count');
+  if (paidCountEl) {
+    paidCountEl.textContent = paidList.length + ' عملية';
+  }
+}
+
+function clearArrearFilters() {
+  const sheetSel = document.getElementById('arr-filter-sheet');
+  const dateInput = document.getElementById('arr-filter-date');
+  if (sheetSel) sheetSel.value = 'all';
+  if (dateInput) dateInput.value = '';
+  renderArrears();
+}
+
+function addArrear() {
+  const tenant = document.getElementById('arr-tenant').value;
+  const amount = parseFloat(document.getElementById('arr-amount').value);
+  const date = document.getElementById('arr-date').value;
+  const notes = document.getElementById('arr-notes').value.trim();
+  const autoTx = document.getElementById('arr-autotx').checked;
+
+  if (!tenant) {
+    alert('الرجاء اختيار الساكن');
+    return;
+  }
+  if (!amount || amount <= 0) {
+    alert('الرجاء إدخال مبلغ صحيح');
+    return;
+  }
+  if (!date) {
+    alert('الرجاء اختيار التاريخ');
+    return;
+  }
+
+  const newArrear = {
+    id: Date.now(),
+    tenant,
+    amount,
+    date,
+    notes,
+    autoTx
+  };
+
+  if (!ARREARS.active) ARREARS.active = [];
+  ARREARS.active.unshift(newArrear);
+
+  document.getElementById('arr-amount').value = '';
+  document.getElementById('arr-notes').value = '';
+
+  renderArrears();
+  renderStats();
+  autoSave();
+}
+
+function markArrearAsPaid(id) {
+  if (!ARREARS.active) return;
+  const index = ARREARS.active.findIndex(a => a.id === id);
+  if (index === -1) return;
+  const arrear = ARREARS.active[index];
+
+  let txId = null;
+  if (arrear.autoTx) {
+    txId = Date.now();
+    TX.unshift({
+      id: txId,
+      date: todayStr(),
+      type: 'income',
+      amount: arrear.amount,
+      note: 'متأخرات مسددة — ' + arrear.tenant + (arrear.notes ? ' (' + arrear.notes + ')' : '')
+    });
+  }
+
+  if (!ARREARS.paid) ARREARS.paid = [];
+  ARREARS.paid.unshift({
+    ...arrear,
+    datePaid: todayStr(),
+    txId: txId
+  });
+
+  if (arrear.month && arrear.sid !== undefined && arrear.f !== undefined && arrear.p !== undefined) {
+    const mK = mk(arrear.month);
+    const u = uk(arrear.sid, arrear.f, arrear.p);
+    if (!P[mK]) P[mK] = {};
+    if (!P[mK][u]) P[mK][u] = [];
+    P[mK][u].push({
+      id: Date.now(),
+      amount: arrear.amount,
+      note: 'سداد متأخرات' + (arrear.notes ? ' — ' + arrear.notes : ''),
+      date: todayStr(),
+      addedToIncome: !!arrear.autoTx,
+      txId: txId
+    });
+  }
+
+  ARREARS.active.splice(index, 1);
+
+  renderArrears();
+  renderStats();
+  renderFloors();
+  autoSave();
+}
+
+function delArrear(id, type) {
+  if (type === 'active') {
+    if (!confirm('هل تريد حذف هذه المتأخرة؟')) return;
+    if (ARREARS.active) {
+      ARREARS.active = ARREARS.active.filter(a => a.id !== id);
+    }
+  } else if (type === 'paid') {
+    if (!confirm('هل تريد حذف هذا السجل؟ (سيتم حذف المعاملة المالية التلقائية المرتبطة به إن وجدت)')) return;
+    if (ARREARS.paid) {
+      const item = ARREARS.paid.find(a => a.id === id);
+      if (item && item.txId) {
+        TX = TX.filter(t => t.id !== item.txId);
+      }
+      ARREARS.paid = ARREARS.paid.filter(a => a.id !== id);
+    }
+  }
+  renderArrears();
+  renderStats();
+  autoSave();
+}
+
 load();
 </script>
